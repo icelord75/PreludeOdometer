@@ -22,7 +22,7 @@
 
 I2C_eeprom eeprom(0x50,16384/8);
 
-#define PPR 17 // VSS pulses per rotation
+#define PPR 4 // VSS pulses per axle rotation
 
 #define TRIP_A 0
 #define TRIP_B 1
