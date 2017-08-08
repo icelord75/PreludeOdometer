@@ -33,8 +33,8 @@ I2C_eeprom eeprom(0x50,16384/8);
 #define TIRE_RIM_DEFAULT   1
 
 const PROGMEM uint8_t TIRE_WIDTH_ARRAY[] = { 185, 195, 205, 215, 225, 235, 245, 255 };
-const PROGMEM uint8_t TIRE_SIDE_ARRAY[] =  { 25, 30, 35, 40, 45, 50, 55, 60, 65,  70, 75 };
-const PROGMEM uint8_t TIRE_RIM_ARRAY[] =   { 14,15,16,17,18,19,20 };
+const PROGMEM uint8_t TIRE_SIDE_ARRAY[] =  { 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75 };
+const PROGMEM uint8_t TIRE_RIM_ARRAY[] =   { 14, 15, 16, 17, 18, 19, 20 };
 
 #define CONFIG_POS_MAX 6
 // CONFIG
@@ -69,8 +69,9 @@ float LENPERPULSE = 0;
 #define LED_clockPin 5
 #define LED_enable 6
 #define LED_reset 7
-#define LED_displayLength 16 // Two HCMS-297x led matrix displays
 
+
+#define LED_displayLength 16 // Two HCMS-297x led matrix displays
 LedDisplay myDisplay = LedDisplay(LED_dataPin, LED_registerSelect, LED_clockPin, LED_enable,
                                   LED_reset, LED_displayLength);
 
@@ -91,7 +92,7 @@ float PulsesToMeters(unsigned long Pulses)
 
 void CalcTire()
 {
-        TIRE_CIRCUMFERENCE = (TIRE_WIDTH_ARRAY[TIRE_WIDTH]/50*TIRE_SIDE_ARRAY[TIRE_SIDE]+TIRE_RIM_ARRAY[TIRE_RIM]*25.4)*3.1415;
+        TIRE_CIRCUMFERENCE = (TIRE_WIDTH_ARRAY[TIRE_WIDTH]/50*TIRE_SIDE_ARRAY[TIRE_SIDE]+TIRE_RIM_ARRAY[TIRE_RIM]*25.4)*3.1416;
 #ifdef DEBUG
         Serial.print("TIRE CIRCUMFERENCE: "); Serial.print(TIRE_CIRCUMFERENCE);
         Serial.print('\n');
@@ -152,6 +153,7 @@ void setup()
 
         CalcTire();
         wdt_reset();
+
         myDisplay.home();
         myDisplay.print("  Honda Prelude");
         for (int a=0; a<DISPLAY_UNDIMMED; a++)
@@ -160,6 +162,7 @@ void setup()
                 analogWrite(NEEDLE, a*17);
                 delay(60);
         }
+
         wdt_reset();
         delay(500);
 
@@ -201,7 +204,7 @@ void loop()
         LEN=PULSES*LENPERPULSE;
         // LEN=PulsesToMeters(PULSES);
         PULSES=0;
-        TOTAL_TRIP=TOTAL_TRIP+LEN;
+        TOTAL_TRIP+=LEN;
         DAILY_TRIP_A+=LEN;
         DAILY_TRIP_B+=LEN;
         if (DAILY_TRIP_A>=10000) DAILY_TRIP_A-=10000;
@@ -283,7 +286,7 @@ void loop()
                 } else {
                         if (PRESSED) // JUST RELEASED
                         {
-                                PRESSED=false;
+                              PRESSED=false;
                                 if (!LONGPRESS) { // SHORTPRESS
                                         if (CURRENT_SHOW==TRIP_A) { CURRENT_SHOW=TRIP_B; }
                                         else { CURRENT_SHOW=TRIP_A; }
