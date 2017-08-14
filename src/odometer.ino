@@ -7,7 +7,7 @@
 //      \___/--------TECH--------\___/
 //       ==== ABOVE SCIENCE 1994 ====
 //
-//   Ab0VE TECH - HONDA Prelude Odometer Version 0.22 / Feb-2017
+//   Ab0VE TECH - HONDA Prelude Odometer
 */
 
 #define DEBUG YES
@@ -20,21 +20,21 @@
 #include <avr/wdt.h>
 
 
-I2C_eeprom eeprom(0x50,16384/8);
+I2C_eeprom eeprom(0x50,16384/8); /* FM24C16A FRAM */
 
-#define PPR 4 // VSS pulses per axle rotation
+#define PPR 4 // VSS pulses per axle revolution
 
 #define TRIP_A 0
 #define TRIP_B 1
 
 // 205/55R15
-#define TIRE_WIDTH_DEFAULT 2
+#define TIRE_WIDTH_DEFAULT 3
 #define TIRE_SIDE_DEFAULT  6
-#define TIRE_RIM_DEFAULT   1
+#define TIRE_RIM_DEFAULT   2
 
-const PROGMEM uint8_t TIRE_WIDTH_ARRAY[] = { 185, 195, 205, 215, 225, 235, 245, 255 };
+const PROGMEM uint8_t TIRE_WIDTH_ARRAY[] = { 175, 185, 195, 205, 215, 225, 235, 245, 255 };
 const PROGMEM uint8_t TIRE_SIDE_ARRAY[] =  { 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75 };
-const PROGMEM uint8_t TIRE_RIM_ARRAY[] =   { 14, 15, 16, 17, 18, 19, 20 };
+const PROGMEM uint8_t TIRE_RIM_ARRAY[] =   { 13, 14, 15, 16, 17, 18, 19, 20 };
 
 #define CONFIG_POS_MAX 6
 // CONFIG
