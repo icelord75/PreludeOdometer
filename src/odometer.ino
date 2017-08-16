@@ -78,7 +78,7 @@ LedDisplay myDisplay = LedDisplay(LED_dataPin, LED_registerSelect, LED_clockPin,
 // MOVE CONFIG TO EEPROM
 #define NEEDLE_DIMMED_DEFAULT     128
 #define NEEDLE_UNDIMMED_DEFAULT   255
-#define DISPLAY_DIMMED_DEFAULT     12
+#define DISPLAY_DIMMED_DEFAULT    12
 #define DISPLAY_UNDIMMED_DEFAULT  15
 
 #define VISUAL_DELAY      100
@@ -109,7 +109,7 @@ void VSS() // VSS signal interrupt
 
 void setup()
 {
-        wdt_enable(WDTO_2S);
+        wdt_enable(WDTO_1S);
         Serial.begin(115200);
         eeprom.begin();
         myDisplay.begin();
@@ -123,6 +123,7 @@ void setup()
         pinMode(interruptPin, INPUT_PULLUP);
         attachInterrupt(digitalPinToInterrupt(interruptPin), VSS, RISING);
 
+// read config from EEPROM
         eeprom.readBlock(0, (uint8_t*) &TOTAL_TRIP, 4);   if (isnan(TOTAL_TRIP)) TOTAL_TRIP=0;
         eeprom.readBlock(4, (uint8_t*) &DAILY_TRIP_A, 4); if (isnan(DAILY_TRIP_A)) DAILY_TRIP_A=0;
         eeprom.readBlock(9, (uint8_t*) &DAILY_TRIP_B, 4); if (isnan(DAILY_TRIP_B)) DAILY_TRIP_B=0;
