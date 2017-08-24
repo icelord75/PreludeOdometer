@@ -164,20 +164,35 @@ void setup()
         attachInterrupt(digitalPinToInterrupt(RPM_PIN), RPM, RISING);
 
 // read config from EEPROM
-        eeprom.readBlock(0, (uint8_t*) &TOTAL_TRIP, 4);   if (isnan(TOTAL_TRIP)) TOTAL_TRIP=0;
-        eeprom.readBlock(4, (uint8_t*) &DAILY_TRIP_A, 4); if (isnan(DAILY_TRIP_A)) DAILY_TRIP_A=0;
-        eeprom.readBlock(9, (uint8_t*) &DAILY_TRIP_B, 4); if (isnan(DAILY_TRIP_B)) DAILY_TRIP_B=0;
-        eeprom.readBlock(15,(uint8_t*) &CURRENT_SHOW, 1); if (isnan(CURRENT_SHOW)) CURRENT_SHOW=TRIP_A;
-        eeprom.readBlock(16,(uint8_t*) &TIRE_WIDTH, 2); if (isnan(TIRE_WIDTH)) TIRE_WIDTH=TIRE_WIDTH_DEFAULT;
-        eeprom.readBlock(18,(uint8_t*) &TIRE_SIDE, 1);  if (isnan(TIRE_SIDE)) TIRE_SIDE=TIRE_SIDE_DEFAULT;
-        eeprom.readBlock(19,(uint8_t*) &TIRE_RIM, 1);   if (isnan(TIRE_RIM)) TIRE_RIM=TIRE_RIM_DEFAULT;
-        eeprom.readBlock(20,(uint8_t*) &NEEDLE_DIMMED, 1); if (isnan(NEEDLE_DIMMED)) NEEDLE_DIMMED=NEEDLE_DIMMED_DEFAULT;
-        eeprom.readBlock(21,(uint8_t*) &NEEDLE_UNDIMMED, 1); if (isnan(NEEDLE_UNDIMMED)) NEEDLE_UNDIMMED=NEEDLE_UNDIMMED_DEFAULT;
-        eeprom.readBlock(22,(uint8_t*) &DISPLAY_DIMMED, 1); if (isnan(DISPLAY_DIMMED)) DISPLAY_DIMMED=DISPLAY_DIMMED_DEFAULT;
-        eeprom.readBlock(23,(uint8_t*) &DISPLAY_UNDIMMED, 1); if (isnan(DISPLAY_UNDIMMED)) DISPLAY_UNDIMMED=DISPLAY_UNDIMMED_DEFAULT;
-        eeprom.readBlock(24,(uint8_t*) &MOTOR_HOURS, 4); if (isnan(MOTOR_HOURS)) MOTOR_HOURS=0;
-        eeprom.readBlock(28,(uint8_t*) &NOMINAL_RPM, 4); if (isnan(NOMINAL_RPM)) NOMINAL_RPM=2000;
-        eeprom.readBlock(32,(uint8_t*) &MOTOR_HOURS_LIMIT, 2); if (isnan(MOTOR_HOURS_LIMIT)) MOTOR_HOURS_LIMIT=DEFAULT_MOTOR_HOURS_LIMIT;
+        eeprom.readBlock(0, (uint8_t*) &TOTAL_TRIP, 4);
+        eeprom.readBlock(4, (uint8_t*) &DAILY_TRIP_A, 4);
+        eeprom.readBlock(9, (uint8_t*) &DAILY_TRIP_B, 4);
+        eeprom.readBlock(15,(uint8_t*) &CURRENT_SHOW, 1);
+        eeprom.readBlock(16,(uint8_t*) &TIRE_WIDTH, 2);
+        eeprom.readBlock(18,(uint8_t*) &TIRE_SIDE, 1);
+        eeprom.readBlock(19,(uint8_t*) &TIRE_RIM, 1);
+        eeprom.readBlock(20,(uint8_t*) &NEEDLE_DIMMED, 1);
+        eeprom.readBlock(21,(uint8_t*) &NEEDLE_UNDIMMED, 1);
+        eeprom.readBlock(22,(uint8_t*) &DISPLAY_DIMMED, 1);
+        eeprom.readBlock(23,(uint8_t*) &DISPLAY_UNDIMMED, 1);
+        eeprom.readBlock(24,(uint8_t*) &MOTOR_HOURS, 4);
+        eeprom.readBlock(28,(uint8_t*) &NOMINAL_RPM, 4);
+        eeprom.readBlock(32,(uint8_t*) &MOTOR_HOURS_LIMIT, 2);
+
+        if (isnan(TOTAL_TRIP)) TOTAL_TRIP=0;
+        if (isnan(DAILY_TRIP_A)) DAILY_TRIP_A=0;
+        if (isnan(DAILY_TRIP_B)) DAILY_TRIP_B=0;
+        if (isnan(CURRENT_SHOW)) CURRENT_SHOW=TRIP_A;
+        if (isnan(TIRE_WIDTH)) TIRE_WIDTH=TIRE_WIDTH_DEFAULT;
+        if (isnan(TIRE_SIDE)) TIRE_SIDE=TIRE_SIDE_DEFAULT;
+        if (isnan(TIRE_RIM)) TIRE_RIM=TIRE_RIM_DEFAULT;
+        if (isnan(NEEDLE_DIMMED)) NEEDLE_DIMMED=NEEDLE_DIMMED_DEFAULT;
+        if (isnan(NEEDLE_UNDIMMED)) NEEDLE_UNDIMMED=NEEDLE_UNDIMMED_DEFAULT;
+        if (isnan(DISPLAY_DIMMED)) DISPLAY_DIMMED=DISPLAY_DIMMED_DEFAULT;
+        if (isnan(DISPLAY_UNDIMMED)) DISPLAY_UNDIMMED=DISPLAY_UNDIMMED_DEFAULT;
+        if (isnan(MOTOR_HOURS)) MOTOR_HOURS=0;
+        if (isnan(NOMINAL_RPM)) NOMINAL_RPM=2000;
+        if (isnan(MOTOR_HOURS_LIMIT)) MOTOR_HOURS_LIMIT=DEFAULT_MOTOR_HOURS_LIMIT;
 
 #ifdef DEBUG
         Serial.print("EEPROM TOTAL: "); Serial.print(TOTAL_TRIP);
@@ -188,11 +203,15 @@ void setup()
         Serial.print("/"); Serial.print(TIRE_SIDE_ARRAY[TIRE_SIDE]);
         Serial.print("R"); Serial.print(TIRE_RIM_ARRAY[TIRE_RIM]);
         Serial.print('\n');
-        Serial.print("EEPROM ARROW: Day:"); Serial.print(NEEDLE_UNDIMMED);  Serial.print("Night:");  Serial.print(NEEDLE_DIMMED);
+        Serial.print("EEPROM ARROW: Day:"); Serial.print(NEEDLE_UNDIMMED);
+        Serial.print("Night:"); Serial.print(NEEDLE_DIMMED);
         Serial.print('\n');
-        Serial.print("EEPROM DISPLAY: Day:"); Serial.print(DISPLAY_UNDIMMED);  Serial.print("Night:");  Serial.print(DISPLAY_DIMMED);
+        Serial.print("EEPROM DISPLAY: Day:"); Serial.print(DISPLAY_UNDIMMED);
+        Serial.print("Night:"); Serial.print(DISPLAY_DIMMED);
         Serial.print('\n');
-        Serial.print("EEPROM MOTOR: Hours"); Serial.print(MOTOR_HOURS);  Serial.print("RPM:");  Serial.print(NOMINAL_RPM);Serial.print("Limit:");  Serial.print(MOTOR_HOURS_LIMIT);
+        Serial.print("EEPROM MOTOR: Hours"); Serial.print(MOTOR_HOURS);
+        Serial.print("RPM:"); Serial.print(NOMINAL_RPM);
+        Serial.print("Limit:"); Serial.print(MOTOR_HOURS_LIMIT);
         Serial.print('\n');
 #endif
 
@@ -347,8 +366,8 @@ void loop()
                 myDisplay.home();
                 if ((MOTOR_HOURS>=MOTOR_HOURS_LIMIT) && !LIMIT_BLINK) // Motor hours limit
                 {
-                      sprintf(buffer,"MOTORLMT");
-                      LIMIT_BLINK=true;
+                        sprintf(buffer,"MOTORLMT");
+                        LIMIT_BLINK=true;
                 } else  // Show total trip
                 {
                         dtostrf(TOTAL_TRIP,8, 0, buffer);
