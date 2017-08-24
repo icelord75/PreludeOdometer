@@ -1,8 +1,8 @@
-#PreludeOdometer
+# PreludeOdometer
 
 Dot matrix LED display replacement for mechanical odometer in Honda Prelude IV
 
-##Supported modes:
+## Supported modes:
  - Arduino Nano328 controller
  - Precise configure wheel/VSS ratio
  - Total mileage
@@ -11,6 +11,6 @@ Dot matrix LED display replacement for mechanical odometer in Honda Prelude IV
  - configurable LED needle illumination with dimming feature
  - configurable Electroluminescence instrumental cluster illumination controller
 
-##License
+## License
 
 **PreludeOdometer** is available under GPL License.
