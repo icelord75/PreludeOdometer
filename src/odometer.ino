@@ -11,8 +11,28 @@
  */
 
 /******** TODO **********
-   Motor hours alaem     ❏
+   Motor hours alarm     ❏
  *************************/
+
+ /* Controller connections
+    //            +-----------+
+    //            • TX    Vin •
+    //            • RX  A Gnd •  <- GND
+    //            • RST R RST •
+    //     GND -> • GND D  +5 •  <- +5V Reg. LM2596HV
+    //     VSS -> • 2   U  A7 •
+    //   Tacho -> • 3   I  A6 •
+    // LED DAT <- • 4   N  A5 • -> FRAM SCL
+    // LED Reg <- • 5   O  A4 • -> FRAM SDA
+    // LED Clk <- • 6      A3 •
+    //  LED En <- • 7   N  A2 •
+    // LED RST -> • 8   A  A1 •
+    //  Needle <- • 9   N  A0 •
+    //  DIMING -> • 10  O Arf •
+    //   Setup -> • 11    3V3 •
+    //  Button -> • 12 ||| 13 •
+    //            +-----------+
+  */
 
 #define DEBUG
 
@@ -27,7 +47,6 @@
 I2C_eeprom eeprom(0x50,16384/8); /* FM24C16A FRAM */
 
 #define PPR 4 // VSS pulses per axle revolution
-
 
 #define TRIP_A 0
 #define TRIP_B 1
@@ -63,9 +82,6 @@ float DAILY_TRIP_A;
 float DAILY_TRIP_B;
 int CURRENT_SHOW=TRIP_A;
 
-//
-float TIRE_CIRCUMFERENCE;
-
 // VSS input pin
 #define VSS_PIN 2
 unsigned int PULSES = 0;
@@ -89,15 +105,15 @@ boolean LIMIT_BLINK=true;
 
 // PINS CONFIG
 #define BUTTON 12
-#define NEEDLE 8
+#define NEEDLE 9
 #define DIMPIN 10
 #define SETUP_PIN 11
 
-#define LED_dataPin 3
-#define LED_registerSelect 4
-#define LED_clockPin 5
-#define LED_enable 6
-#define LED_reset 7
+#define LED_dataPin 4
+#define LED_registerSelect 5
+#define LED_clockPin 6
+#define LED_enable 7
+#define LED_reset 8
 
 #define LED_displayLength 16 // Two HCMS-297x led matrix displays
 LedDisplay myDisplay = LedDisplay(LED_dataPin, LED_registerSelect, LED_clockPin, LED_enable,
@@ -107,6 +123,7 @@ LedDisplay myDisplay = LedDisplay(LED_dataPin, LED_registerSelect, LED_clockPin,
 #define LOGO_DELAY        500 // firt logo output delay
 
 float LEN=0;
+float TIRE_CIRCUMFERENCE;
 unsigned long TIME,TIMES;
 char buffer[20];
 bool PRESSED=false;
@@ -157,13 +174,13 @@ void setup()
         pinMode(NEEDLE, OUTPUT);
         pinMode(BUTTON, INPUT_PULLUP);
         pinMode(SETUP_PIN, INPUT_PULLUP);
-        pinMode(VSS_PIN, INPUT_PULLUP);
-        pinMode(RPM_PIN, INPUT_PULLUP);
+        pinMode(VSS_PIN, INPUT);
+        pinMode(RPM_PIN, INPUT);
 
         attachInterrupt(digitalPinToInterrupt(VSS_PIN), VSS, RISING);
         attachInterrupt(digitalPinToInterrupt(RPM_PIN), RPM, RISING);
 
-// read config from EEPROM
+        // read config from EEPROM
         eeprom.readBlock(0, (uint8_t*) &TOTAL_TRIP, 4);
         eeprom.readBlock(4, (uint8_t*) &DAILY_TRIP_A, 4);
         eeprom.readBlock(9, (uint8_t*) &DAILY_TRIP_B, 4);
