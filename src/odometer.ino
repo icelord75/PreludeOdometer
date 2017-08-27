@@ -143,10 +143,10 @@ uint8_t DISPLAY_MODE=DISPLAY_TRIP;
 
 void CalcTire()
 {
-        TIRE_CIRCUMFERENCE = (TIRE_WIDTH_ARRAY[TIRE_WIDTH]*TIRE_SIDE_ARRAY[TIRE_SIDE]/100+TIRE_RIM_ARRAY[TIRE_RIM]*25.4)*3.1416;
+        TIRE_CIRCUMFERENCE = (TIRE_WIDTH_ARRAY[TIRE_WIDTH]*TIRE_SIDE_ARRAY[TIRE_SIDE]/100+TIRE_RIM_ARRAY[TIRE_RIM]*25.4)*3.1416/1000;
 #ifdef DEBUG
         Serial.print("TIRE CIRCUMFERENCE: "); Serial.print(TIRE_CIRCUMFERENCE);
-        Serial.print('\n');
+        Serial.println("m");
 #endif
         LENPERPULSE=TIRE_CIRCUMFERENCE/PPR/1000; // in Meters
 }
@@ -165,7 +165,7 @@ void setBrightness(uint8_t bright)
 {
         // set the brightness: for each 4 chars
         for (int a=1; a<LED_displayLength/4; a++ )
-                myDisplay.loadControlRegister(B01110000 + bright);
+                myDisplay.loadControlRegister(B01110000 + (bright && B01111));
 }
 
 void setup()
@@ -217,7 +217,7 @@ void setup()
         Serial.print("R"); Serial.print(TIRE_RIM);
         Serial.print('\n');
         Serial.print("Night:"); Serial.print(NEEDLE_DIMMED);
-        Serial.print("EEPROM ARROW: Day:"); Serial.print(NEEDLE_UNDIMMED);
+        Serial.print("EEPROM NEEDLE: Day:"); Serial.print(NEEDLE_UNDIMMED);
         Serial.print('\n');
         Serial.print("EEPROM DISPLAY: Day:"); Serial.print(DISPLAY_UNDIMMED);
         Serial.print("Night:"); Serial.print(DISPLAY_DIMMED);
@@ -228,9 +228,9 @@ void setup()
         Serial.print('\n');
 #endif
 
-        if (TIRE_WIDTH>sizeof(TIRE_WIDTH_ARRAY)/2) TIRE_WIDTH=TIRE_WIDTH_DEFAULT;
-        if (TIRE_SIDE>sizeof(TIRE_SIDE_ARRAY)) TIRE_SIDE=TIRE_SIDE_DEFAULT;
-        if (TIRE_RIM>sizeof(TIRE_RIM_ARRAY)) TIRE_RIM=TIRE_RIM_DEFAULT;
+        if (TIRE_WIDTH>=sizeof(TIRE_WIDTH_ARRAY)/2) TIRE_WIDTH=TIRE_WIDTH_DEFAULT;
+        if (TIRE_SIDE>=sizeof(TIRE_SIDE_ARRAY)) TIRE_SIDE=TIRE_SIDE_DEFAULT;
+        if (TIRE_RIM>=sizeof(TIRE_RIM_ARRAY)) TIRE_RIM=TIRE_RIM_DEFAULT;
         if (NEEDLE_DIMMED<1) NEEDLE_DIMMED=NEEDLE_DIMMED_DEFAULT;
         if (NEEDLE_UNDIMMED<1) NEEDLE_UNDIMMED=NEEDLE_UNDIMMED_DEFAULT;
         if (DISPLAY_DIMMED<1) DISPLAY_DIMMED=DISPLAY_DIMMED_DEFAULT;
@@ -437,9 +437,9 @@ void loop()
                         break;
                 case 2: sprintf(buffer,"Tires  R% 7d\"",TIRE_RIM_ARRAY[TIRE_RIM]);
                         break;
-                case 3: sprintf(buffer,"ArrowDAY% 8d",NEEDLE_UNDIMMED);
+                case 3: sprintf(buffer,"NeedlDAY% 8d",NEEDLE_UNDIMMED);
                         break;
-                case 4: sprintf(buffer,"ArrowNHT% 8d",NEEDLE_DIMMED);
+                case 4: sprintf(buffer,"NeedlNHT% 8d",NEEDLE_DIMMED);
                         break;
                 case 5: sprintf(buffer,"DsplyDAY% 8d",DISPLAY_UNDIMMED);
                         break;
