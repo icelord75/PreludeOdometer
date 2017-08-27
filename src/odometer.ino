@@ -1,4 +1,4 @@
-/*
+  /*
    //      _______ __  _________ _________
    //      \_     |  |/  .  \   |   \ ___/
    //        / :  |   \  /   \  |   / _>_
@@ -34,7 +34,7 @@
     //            +-----------+
   */
 
-#define DEBUG
+//#define DEBUG
 
 #include <avr/pgmspace.h>
 #include <Arduino.h>
@@ -57,15 +57,15 @@ I2C_eeprom eeprom(0x50,16384/8); /* FM24C16A FRAM */
 #define TIRE_SIDE_DEFAULT  6
 #define TIRE_RIM_DEFAULT   2
 
-const PROGMEM uint16_t TIRE_WIDTH_ARRAY[] = { 165, 175, 185, 195, 205, 215, 225, 235, 245, 255, 265, 275, 285, 295, 305 };
-const PROGMEM uint8_t TIRE_SIDE_ARRAY[] =   { 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85 };
-const PROGMEM uint8_t TIRE_RIM_ARRAY[] =    { 13, 14, 15, 16, 17, 18, 19, 20, 21, 22 };
+uint16_t TIRE_WIDTH_ARRAY[] = { 165, 175, 185, 195, 205, 215, 225, 235, 245, 255, 265, 275, 285, 295, 305 };
+uint8_t TIRE_SIDE_ARRAY[] =   { 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85 };
+uint8_t TIRE_RIM_ARRAY[] =    { 13, 14, 15, 16, 17, 18, 19, 20, 21, 22 };
 
-#define CONFIG_POS_MAX 8
+#define CONFIG_POS_MAX 9
 
 // CONFIG
 uint8_t TIRE_RIM;
-uint16_t TIRE_WIDTH;
+uint8_t TIRE_WIDTH;
 uint8_t TIRE_SIDE;
 #define NEEDLE_STEP 16
 uint8_t NEEDLE_DIMMED;
@@ -77,10 +77,11 @@ uint8_t DISPLAY_DIMMED;
 uint8_t DISPLAY_UNDIMMED;
 #define DISPLAY_DIMMED_DEFAULT    10
 #define DISPLAY_UNDIMMED_DEFAULT  15
-float TOTAL_TRIP;
-float DAILY_TRIP_A;
-float DAILY_TRIP_B;
+double TOTAL_TRIP;
+double DAILY_TRIP_A;
+double DAILY_TRIP_B;
 int CURRENT_SHOW=TRIP_A;
+boolean LEADING_ZERO;
 
 // VSS input pin
 #define VSS_PIN 2
@@ -119,8 +120,9 @@ boolean LIMIT_BLINK=true;
 LedDisplay myDisplay = LedDisplay(LED_dataPin, LED_registerSelect, LED_clockPin, LED_enable,
                                   LED_reset, LED_displayLength);
 
-#define VISUAL_DELAY      100 // for visual pleasure and correct timed features
+#define VISUAL_DELAY      10 // for visual pleasure and correct timed features
 #define LOGO_DELAY        500 // firt logo output delay
+#define LONGPRESS_TIME    1000
 
 float LEN=0;
 float TIRE_CIRCUMFERENCE;
@@ -131,6 +133,7 @@ bool LONGPRESS=false;
 bool DIM=false;
 bool DIMMED=false;
 bool SETUP_PRESSED=false;
+bool SETUP_DO=false;
 uint8_t val;
 uint8_t SETUP_POS=0;
 
@@ -160,7 +163,7 @@ void RPM() // VSS signal interrupt
 
 void setup()
 {
-        wdt_enable(WDTO_1S);
+///////////////        wdt_enable(WDTO_1S);
 #ifdef DEBUG
         Serial.begin(115200);
 #endif
@@ -174,8 +177,8 @@ void setup()
         pinMode(NEEDLE, OUTPUT);
         pinMode(BUTTON, INPUT_PULLUP);
         pinMode(SETUP_PIN, INPUT_PULLUP);
-        pinMode(VSS_PIN, INPUT);
-        pinMode(RPM_PIN, INPUT);
+        pinMode(VSS_PIN, INPUT_PULLUP);
+        pinMode(RPM_PIN, INPUT_PULLUP);
 
         attachInterrupt(digitalPinToInterrupt(VSS_PIN), VSS, RISING);
         attachInterrupt(digitalPinToInterrupt(RPM_PIN), RPM, RISING);
@@ -185,7 +188,7 @@ void setup()
         eeprom.readBlock(4, (uint8_t*) &DAILY_TRIP_A, 4);
         eeprom.readBlock(9, (uint8_t*) &DAILY_TRIP_B, 4);
         eeprom.readBlock(15,(uint8_t*) &CURRENT_SHOW, 1);
-        eeprom.readBlock(16,(uint8_t*) &TIRE_WIDTH, 2);
+        eeprom.readBlock(16,(uint8_t*) &TIRE_WIDTH, 1);
         eeprom.readBlock(18,(uint8_t*) &TIRE_SIDE, 1);
         eeprom.readBlock(19,(uint8_t*) &TIRE_RIM, 1);
         eeprom.readBlock(20,(uint8_t*) &NEEDLE_DIMMED, 1);
@@ -195,33 +198,18 @@ void setup()
         eeprom.readBlock(24,(uint8_t*) &MOTOR_HOURS, 4);
         eeprom.readBlock(28,(uint8_t*) &NOMINAL_RPM, 4);
         eeprom.readBlock(32,(uint8_t*) &MOTOR_HOURS_LIMIT, 2);
-
-        if (isnan(TOTAL_TRIP)) TOTAL_TRIP=0;
-        if (isnan(DAILY_TRIP_A)) DAILY_TRIP_A=0;
-        if (isnan(DAILY_TRIP_B)) DAILY_TRIP_B=0;
-        if (isnan(CURRENT_SHOW)) CURRENT_SHOW=TRIP_A;
-        if (isnan(TIRE_WIDTH)) TIRE_WIDTH=TIRE_WIDTH_DEFAULT;
-        if (isnan(TIRE_SIDE)) TIRE_SIDE=TIRE_SIDE_DEFAULT;
-        if (isnan(TIRE_RIM)) TIRE_RIM=TIRE_RIM_DEFAULT;
-        if (isnan(NEEDLE_DIMMED)) NEEDLE_DIMMED=NEEDLE_DIMMED_DEFAULT;
-        if (isnan(NEEDLE_UNDIMMED)) NEEDLE_UNDIMMED=NEEDLE_UNDIMMED_DEFAULT;
-        if (isnan(DISPLAY_DIMMED)) DISPLAY_DIMMED=DISPLAY_DIMMED_DEFAULT;
-        if (isnan(DISPLAY_UNDIMMED)) DISPLAY_UNDIMMED=DISPLAY_UNDIMMED_DEFAULT;
-        if (isnan(MOTOR_HOURS)) MOTOR_HOURS=0;
-        if (isnan(NOMINAL_RPM)) NOMINAL_RPM=2000;
-        if (isnan(MOTOR_HOURS_LIMIT)) MOTOR_HOURS_LIMIT=DEFAULT_MOTOR_HOURS_LIMIT;
-
+        eeprom.readBlock(33,(uint8_t*) &LEADING_ZERO, 1);
 #ifdef DEBUG
         Serial.print("EEPROM TOTAL: "); Serial.print(TOTAL_TRIP);
         Serial.print(", A: "); Serial.print(DAILY_TRIP_A);
         Serial.print(", B: "); Serial.print(DAILY_TRIP_B);
         Serial.print('\n');
-        Serial.print("EEPROM TIRES: "); Serial.print(TIRE_WIDTH_ARRAY[TIRE_WIDTH]);
-        Serial.print("/"); Serial.print(TIRE_SIDE_ARRAY[TIRE_SIDE]);
-        Serial.print("R"); Serial.print(TIRE_RIM_ARRAY[TIRE_RIM]);
+        Serial.print("EEPROM TIRES: "); Serial.print(TIRE_WIDTH);
+        Serial.print("/"); Serial.print(TIRE_SIDE);
+        Serial.print("R"); Serial.print(TIRE_RIM);
         Serial.print('\n');
-        Serial.print("EEPROM ARROW: Day:"); Serial.print(NEEDLE_UNDIMMED);
         Serial.print("Night:"); Serial.print(NEEDLE_DIMMED);
+        Serial.print("EEPROM ARROW: Day:"); Serial.print(NEEDLE_UNDIMMED);
         Serial.print('\n');
         Serial.print("EEPROM DISPLAY: Day:"); Serial.print(DISPLAY_UNDIMMED);
         Serial.print("Night:"); Serial.print(DISPLAY_DIMMED);
@@ -231,11 +219,21 @@ void setup()
         Serial.print("Limit:"); Serial.print(MOTOR_HOURS_LIMIT);
         Serial.print('\n');
 #endif
-
+if (TIRE_WIDTH>sizeof(TIRE_WIDTH_ARRAY)/2) TIRE_WIDTH=TIRE_WIDTH_DEFAULT;
+if (TIRE_SIDE>sizeof(TIRE_SIDE_ARRAY)) TIRE_SIDE=TIRE_SIDE_DEFAULT;
+if (TIRE_RIM>sizeof(TIRE_RIM_ARRAY)) TIRE_RIM=TIRE_RIM_DEFAULT;
+if (NEEDLE_DIMMED<1) NEEDLE_DIMMED=NEEDLE_DIMMED_DEFAULT;
+if (NEEDLE_UNDIMMED<1) NEEDLE_UNDIMMED=NEEDLE_UNDIMMED_DEFAULT;
+if (DISPLAY_DIMMED<1) DISPLAY_DIMMED=DISPLAY_DIMMED_DEFAULT;
+if (DISPLAY_UNDIMMED<1) DISPLAY_UNDIMMED=DISPLAY_UNDIMMED_DEFAULT;
+        if (NOMINAL_RPM<500) NOMINAL_RPM=2000;
+        if (MOTOR_HOURS_LIMIT<100) MOTOR_HOURS_LIMIT=DEFAULT_MOTOR_HOURS_LIMIT;
+        LEADING_ZERO=LEADING_ZERO & 1;
         CalcTire();
         wdt_reset();
 
         myDisplay.home();
+        myDisplay.setBrightness(0);
         myDisplay.print("   HondaPrelude ");
         for (int a=0; a<DISPLAY_UNDIMMED; a++)
         {
@@ -284,7 +282,6 @@ void loop()
         eeprom.writeBlock(9, (uint8_t*) &DAILY_TRIP_B, 4);
         eeprom.writeBlock(24, (uint8_t*) &MOTOR_HOURS, 4);
 
-
 #ifdef DEBUG
         Serial.print("RPM:"); Serial.print(RPMs);
         Serial.print(" T:"); Serial.print(TOTAL_TRIP);
@@ -298,12 +295,18 @@ void loop()
         val=digitalRead(DIMPIN);
         if (val == HIGH) {
                 if (!DIMMED) { // JUST DIMMED
+                  #ifdef DEBUG
+                          Serial.println("DIMMED");
+                  #endif
                         myDisplay.setBrightness(DISPLAY_DIMMED);
                         analogWrite(NEEDLE, NEEDLE_DIMMED);
                         //**************************************
                         DIMMED=true;
                 } else {
                         if (DIMMED) { // JUST UNDIMMED
+                          #ifdef DEBUG
+                                  Serial.println("UNDIMMED");
+                          #endif
                                 myDisplay.setBrightness(DISPLAY_UNDIMMED);
                                 analogWrite(NEEDLE, NEEDLE_UNDIMMED);
                                 //**********************************
@@ -314,20 +317,28 @@ void loop()
 
 
         val=digitalRead(SETUP_PIN);
-        if (val == HIGH) {
+        if (val == LOW) {
                 if (!SETUP_PRESSED) {
+                  #ifdef DEBUG
+                          Serial.println("SETUP_PRESSED");
+                  #endif
                         SETUP_PRESSED=true;
+                        SETUP_DO=true;
                         TIMES=millis();
                 } else {
-                        if ((millis()-TIMES)>2000) {
+                        if ((millis()-TIMES)>LONGPRESS_TIME) {
                                 TIMES=millis();
                                 switch (DISPLAY_MODE) {
                                 case DISPLAY_TRIP:
                                         DISPLAY_MODE=DISPLAY_SETUP;
+                                        SETUP_DO=false;
                                         break;
                                 default:
+                                #ifdef DEBUG
+                                        Serial.println("Write SETUP");
+                                        #endif
                                         //BACK FROM SETUP
-                                        eeprom.writeBlock(16,(uint8_t*) &TIRE_WIDTH, 2);
+                                        eeprom.writeBlock(16,(uint8_t*) &TIRE_WIDTH, 1);
                                         eeprom.writeBlock(18,(uint8_t*) &TIRE_SIDE, 1);
                                         eeprom.writeBlock(19,(uint8_t*) &TIRE_RIM, 1);
                                         eeprom.writeBlock(20,(uint8_t*) &NEEDLE_DIMMED, 1);
@@ -335,8 +346,10 @@ void loop()
                                         eeprom.writeBlock(22,(uint8_t*) &DISPLAY_DIMMED, 1);
                                         eeprom.writeBlock(23,(uint8_t*) &DISPLAY_UNDIMMED, 1);
                                         eeprom.writeBlock(28,(uint8_t*) &NOMINAL_RPM, 4);
-                                        eeprom.writeBlock(28,(uint8_t*) &MOTOR_HOURS_LIMIT, 2);
+                                        eeprom.writeBlock(32,(uint8_t*) &MOTOR_HOURS_LIMIT, 2);
+                                        eeprom.writeBlock(34,(uint8_t*) &LEADING_ZERO, 1);
                                         DISPLAY_MODE=DISPLAY_TRIP;
+                                        SETUP_DO=false;
                                         CalcTire(); // Recalc circumference size
                                         break;
                                 }
@@ -351,12 +364,15 @@ void loop()
 // TRIP MODE
         case DISPLAY_TRIP:
                 val=digitalRead(BUTTON);
-                if (val == HIGH) {
+                if (val == LOW) {
                         if (!PRESSED) { // JUST PRESSED
+                          #ifdef DEBUG
+                                  Serial.println("MODE CHANGE");
+                          #endif
                                 PRESSED=true;
                                 TIME=millis();
                         } else { // HOLDING
-                                if ((millis()-TIME)>2000) {// LOGPRESS
+                                if ((millis()-TIME)>LONGPRESS_TIME) {// LOGPRESS
                                         LONGPRESS=true;
                                         switch (CURRENT_SHOW) {
                                         case TRIP_A:
@@ -387,7 +403,12 @@ void loop()
                         LIMIT_BLINK=true;
                 } else  // Show total trip
                 {
+                   if (LEADING_ZERO)
+                   {
+                          sprintf(buffer,"%08d",(int)TOTAL_TRIP);
+                   } else {
                         dtostrf(TOTAL_TRIP,8, 0, buffer);
+                        }
                         LIMIT_BLINK=false;
                 }
                 switch (CURRENT_SHOW) {
@@ -401,7 +422,7 @@ void loop()
                         break;
                 case MOTOR_HOUR:
                         buffer[8]='M';
-                        dtostrf(MOTOR_HOURS,7, 1, buffer+9);
+                        dtostrf(MOTOR_HOURS,7, 2, buffer+9);
                         break;
                 }
                 //buffer[16]='\0';
@@ -430,15 +451,18 @@ void loop()
                         break;
                 case 8: sprintf(buffer,"MH Limit% 8d",MOTOR_HOURS_LIMIT);
                         break;
+                case 9: sprintf(buffer,"LEADING ZERO=%d  ",LEADING_ZERO);
+                          break;
                 }
 
                 val=digitalRead(BUTTON);
-                if (val == HIGH) {
-                        if (!PRESSED) { // JUST PRESSED
+                if ((val == LOW) || SETUP_DO) {
+                        if (!PRESSED && (val==LOW)) { // JUST PRESSED
                                 PRESSED=true;
                                 TIME=millis();
                         } else { // HOLDING
-                                if ((millis()-TIME)>2000) {// LOGPRESS
+                                if (( SETUP_DO && !SETUP_PRESSED) || (millis()-TIME)>LONGPRESS_TIME) {// LOGPRESS
+                                        SETUP_DO=false;
                                         LONGPRESS=true;
                                         SETUP_POS++;
                                         if (SETUP_POS > CONFIG_POS_MAX) SETUP_POS=0;
@@ -464,11 +488,11 @@ void loop()
                                                 if (TIRE_RIM>sizeof(TIRE_RIM_ARRAY)) TIRE_RIM=0;
                                                 break;
                                         case 3:
-                                                NEEDLE_UNDIMMED=+NEEDLE_STEP;
+                                                NEEDLE_UNDIMMED+=NEEDLE_STEP;
                                                 analogWrite(NEEDLE, NEEDLE_UNDIMMED);
                                                 break;
                                         case 4:
-                                                NEEDLE_DIMMED=+NEEDLE_STEP;
+                                                NEEDLE_DIMMED+=NEEDLE_STEP;
                                                 analogWrite(NEEDLE, NEEDLE_DIMMED);
                                                 break;
                                         case 5:
@@ -489,6 +513,9 @@ void loop()
                                                 MOTOR_HOURS_LIMIT+=MOTOR_HOURS_STEP;
                                                 if (MOTOR_HOURS_LIMIT>MAX_MOTOR_HOURS) MOTOR_HOURS_LIMIT=MOTOR_HOURS_STEP;
                                                 break;
+                                                case 9:
+                                                        LEADING_ZERO=!LEADING_ZERO;
+                                                        break;
                                         }
                                 } else
                                         LONGPRESS=false;

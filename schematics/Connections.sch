@@ -4327,8 +4327,8 @@ General purpose 1N400x type rectifier
 <part name="JP1" library="pinhead" deviceset="PINHD-1X2" device=""/>
 <part name="SUB1.2" library="con-lstb" deviceset="MA07-1" device=""/>
 <part name="SUB1.1" library="con-lstb" deviceset="MA06-1" device=""/>
-<part name="R4" library="rcl" deviceset="R-EU_" device="0207/10" value="1K"/>
-<part name="R6" library="rcl" deviceset="R-EU_" device="0207/10" value="10K"/>
+<part name="R4" library="rcl" deviceset="R-EU_" device="0207/10" value="3.3K"/>
+<part name="R6" library="rcl" deviceset="R-EU_" device="0207/10" value="1K"/>
 <part name="GND3" library="supply1" deviceset="GND" device=""/>
 <part name="D1" library="adafruit" deviceset="1N4004" device=""/>
 <part name="JP3" library="adafruit" deviceset="PINHD-1X3" device=""/>
