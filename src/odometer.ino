@@ -165,7 +165,7 @@ void setBrightness(uint8_t bright)
 {
         // set the brightness: for each 4 chars
         for (int a=1; a<LED_displayLength/4; a++ )
-                myDisplay.loadControlRegister(B01110000 + (bright && B01111));
+                myDisplay.loadControlRegister(B01110000 + (bright));
 }
 
 void setup()
@@ -178,7 +178,7 @@ void setup()
         myDisplay.begin();
         setBrightness(0);
 #ifdef DEBUG
-        Serial.print("\n\n-=Ab0VE TECH=-\nHonda Prelude Oddometer\n\n");
+        Serial.print("\n\nAb0VE-TECH\nHonda Prelude Oddometer\n\n");
 #endif
         pinMode(DIMPIN, INPUT);
         pinMode(NEEDLE, OUTPUT);
@@ -205,7 +205,7 @@ void setup()
         eeprom.readBlock(24,(uint8_t*) &MOTOR_HOURS, 4);
         eeprom.readBlock(28,(uint8_t*) &NOMINAL_RPM, 4);
         eeprom.readBlock(32,(uint8_t*) &MOTOR_HOURS_LIMIT, 2);
-        eeprom.readBlock(33,(uint8_t*) &LEADING_ZERO, 1);
+        eeprom.readBlock(34,(uint8_t*) &LEADING_ZERO, 1);
 
 #ifdef DEBUG
         Serial.print("EEPROM TOTAL: "); Serial.print(TOTAL_TRIP);
@@ -426,30 +426,29 @@ void loop()
                 //buffer[16]='\0';
                 myDisplay.print(buffer);
                 break;
-
+                sprintf(buffer,"                ");
 // SETUP MODE
         case DISPLAY_SETUP:
-
                 switch (SETUP_POS) {
-                case 0: sprintf(buffer,"Tires  W% 6dmm",TIRE_WIDTH_ARRAY[TIRE_WIDTH]);
+                case 0: sprintf(buffer,"   Tires  % 3dmm",TIRE_WIDTH_ARRAY[TIRE_WIDTH]);
                         break;
-                case 1: sprintf(buffer,"Tires  S% 7d%%",TIRE_SIDE_ARRAY[TIRE_SIDE]);
+                case 1: sprintf(buffer,"   Tires    /%d%%",TIRE_SIDE_ARRAY[TIRE_SIDE]);
                         break;
-                case 2: sprintf(buffer,"Tires  R% 7d\"",TIRE_RIM_ARRAY[TIRE_RIM]);
+                case 2: sprintf(buffer,"   Tires    R%d\"",TIRE_RIM_ARRAY[TIRE_RIM]);
                         break;
-                case 3: sprintf(buffer,"NeedlDAY% 8d",NEEDLE_UNDIMMED);
+                case 3: sprintf(buffer,"  NeedleDay% 5d ",NEEDLE_UNDIMMED);
                         break;
-                case 4: sprintf(buffer,"NeedlNHT% 8d",NEEDLE_DIMMED);
+                case 4: sprintf(buffer,"  NeedleNght% 3d ",NEEDLE_DIMMED);
                         break;
-                case 5: sprintf(buffer,"DsplyDAY% 8d",DISPLAY_UNDIMMED);
+                case 5: sprintf(buffer," DisplayDay% 5d ",DISPLAY_UNDIMMED);
                         break;
-                case 6: sprintf(buffer,"DsplyNHT% 8d",DISPLAY_DIMMED);
+                case 6: sprintf(buffer," DisplayNight% 3d ",DISPLAY_DIMMED);
                         break;
-                case 7: sprintf(buffer,"NrmalRPM% 8d",NOMINAL_RPM);
+                case 7: sprintf(buffer," NominalRPM% 5d ",NOMINAL_RPM);
                         break;
-                case 8: sprintf(buffer,"MH Limit% 8d",MOTOR_HOURS_LIMIT);
+                case 8: sprintf(buffer,"MotrHourLmt% 4d ",MOTOR_HOURS_LIMIT);
                         break;
-                case 9: sprintf(buffer,"Leading Zero=%d  ",LEADING_ZERO);
+                case 9: sprintf(buffer," LeadingZero=%d  ",LEADING_ZERO);
                         break;
                 }
 
