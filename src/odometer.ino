@@ -10,10 +10,6 @@
    //   Ab0VE TECH - HONDA Prelude Odometer
  */
 
-/******** TODO **********
-   Motor hours alarm     ❏
- *************************/
-
 /* Controller connections
    //            +-----------+
    //            • TX    Vin •
@@ -103,6 +99,7 @@ uint16_t MOTOR_HOURS_LIMIT;
 #define MOTOR_HOURS_STEP 10
 #define MAX_MOTOR_HOURS 1000
 boolean LIMIT_BLINK=true;
+uint8_t DIMMING;
 
 // PINS CONFIG
 #define BUTTON 12
@@ -140,6 +137,8 @@ uint8_t SETUP_POS=0;
 #define DISPLAY_TRIP 0
 #define DISPLAY_SETUP 1
 uint8_t DISPLAY_MODE=DISPLAY_TRIP;
+uint8_t DEFAULT_BRIGHTNESS;
+uint8_t DEFAULT_NEEDLE;
 
 void CalcTire()
 {
@@ -165,7 +164,7 @@ void setBrightness(uint8_t bright)
 {
         // set the brightness: for each 4 chars
         for (int a=1; a<LED_displayLength/4; a++ )
-                myDisplay.loadControlRegister(B01110000 + (bright));
+                myDisplay.loadControlRegister(B01110000 + (bright & B00001111));
 }
 
 void setup()
@@ -250,20 +249,10 @@ void setup()
                 analogWrite(NEEDLE, a*17);
                 delay(60);
         }
-
+        DEFAULT_BRIGHTNESS=DISPLAY_UNDIMMED;
+        DEFAULT_NEEDLE=NEEDLE_UNDIMMED;
         wdt_reset();
         delay(LOGO_DELAY);
-
-// DEFAULT LIGHTS
-        uint8_t val=digitalRead(DIMPIN);
-        if (val == HIGH) {
-                setBrightness(DISPLAY_DIMMED);
-                analogWrite(NEEDLE, NEEDLE_DIMMED);
-        } else {
-                setBrightness(DISPLAY_UNDIMMED);
-                analogWrite(NEEDLE, NEEDLE_UNDIMMED);
-        }
-
         wdt_reset();
 }
 
@@ -303,17 +292,21 @@ void loop()
         Serial.println("");
 #endif
 
-        val=digitalRead(DIMPIN);
-        if (val == HIGH) {
-                if (!DIMMED) { // JUST DIMMED
-                        setBrightness(DISPLAY_DIMMED);
-                        analogWrite(NEEDLE, NEEDLE_DIMMED);
-                        DIMMED=true;
+        DIMMING=digitalRead(DIMPIN);
+        if (DIMMING == HIGH) {
+                if (!DIMMED) { // JUST DIMMED and fade in
+                        if (DEFAULT_BRIGHTNESS>DISPLAY_DIMMED) DEFAULT_BRIGHTNESS--;
+                        if (DEFAULT_NEEDLE>NEEDLE_DIMMED) DEFAULT_NEEDLE-=NEEDLE_STEP;
+                        if ((DEFAULT_BRIGHTNESS==DISPLAY_DIMMED) && (DEFAULT_NEEDLE<=NEEDLE_DIMMED)) DIMMED=true;
+                        setBrightness(DEFAULT_BRIGHTNESS);
+                        analogWrite(NEEDLE, DEFAULT_NEEDLE);
                 } else {
-                        if (DIMMED) { // JUST UNDIMMED
-                                setBrightness(DISPLAY_UNDIMMED);
-                                analogWrite(NEEDLE, NEEDLE_UNDIMMED);
-                                DIMMED=false;
+                        if (DIMMED) { // JUST UNDIMMED and fade out
+                                if (DEFAULT_BRIGHTNESS<DISPLAY_UNDIMMED) DEFAULT_BRIGHTNESS++;
+                                if (DEFAULT_NEEDLE<NEEDLE_UNDIMMED) DEFAULT_NEEDLE+=NEEDLE_STEP;
+                                if ((DEFAULT_BRIGHTNESS>=DISPLAY_UNDIMMED) && (DEFAULT_NEEDLE>=NEEDLE_UNDIMMED)) DIMMED=false;
+                                setBrightness(DEFAULT_BRIGHTNESS);
+                                analogWrite(NEEDLE, DEFAULT_NEEDLE);
                         }
                 }
         }
@@ -333,9 +326,6 @@ void loop()
                                         SETUP_DO=false;
                                         break;
                                 default:
-                                #ifdef DEBUG
-                                        Serial.println("Write SETUP");
-                                        #endif
                                         //BACK FROM SETUP
                                         eeprom.writeBlock(16,(uint8_t*) &TIRE_WIDTH, 1);
                                         eeprom.writeBlock(18,(uint8_t*) &TIRE_SIDE, 1);
@@ -399,6 +389,8 @@ void loop()
                 {
                         sprintf(buffer,"MOTORLMT");
                         LIMIT_BLINK=true;
+                        setBrightness(DISPLAY_UNDIMMED_DEFAULT);
+                        analogWrite(NEEDLE,NEEDLE_UNDIMMED_DEFAULT);
                 } else  // Show total trip
                 {
                         if (LEADING_ZERO)
@@ -406,6 +398,17 @@ void loop()
                                 sprintf(buffer,"%08d",(int)TOTAL_TRIP);
                         } else {
                                 dtostrf(TOTAL_TRIP,8, 0, buffer);
+                        }
+                        if (LIMIT_BLINK)
+                        {
+                                if (DIMMING == HIGH)
+                                {
+                                        setBrightness(DISPLAY_DIMMED);
+                                        analogWrite(NEEDLE, NEEDLE_DIMMED);
+                                } else {
+                                        setBrightness(DISPLAY_UNDIMMED);
+                                        analogWrite(NEEDLE, NEEDLE_UNDIMMED);
+                                }
                         }
                         LIMIT_BLINK=false;
                 }
@@ -419,16 +422,16 @@ void loop()
                         dtostrf(DAILY_TRIP_B,7, 1, buffer+9);
                         break;
                 case MOTOR_HOUR:
-                        buffer[8]='M';
-                        dtostrf(MOTOR_HOURS,7, 2, buffer+9);
+                        buffer[8]='M';buffer[9]='H';
+                        dtostrf(MOTOR_HOURS,7, 2, buffer+10);
                         break;
                 }
                 //buffer[16]='\0';
                 myDisplay.print(buffer);
                 break;
-                sprintf(buffer,"                ");
 // SETUP MODE
         case DISPLAY_SETUP:
+                sprintf(buffer,"                ");
                 switch (SETUP_POS) {
                 case 0: sprintf(buffer,"   Tires  % 3dmm",TIRE_WIDTH_ARRAY[TIRE_WIDTH]);
                         break;
