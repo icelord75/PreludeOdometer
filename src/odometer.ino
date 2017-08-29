@@ -39,7 +39,6 @@
 #include <I2C_eeprom.h>
 #include <avr/wdt.h>
 
-
 I2C_eeprom eeprom(0x50,16384/8); /* FM24C16A FRAM */
 
 #define PPR 4 // VSS pulses per axle revolution
@@ -205,7 +204,6 @@ void setup()
         eeprom.readBlock(28,(uint8_t*) &NOMINAL_RPM, 4);
         eeprom.readBlock(32,(uint8_t*) &MOTOR_HOURS_LIMIT, 2);
         eeprom.readBlock(34,(uint8_t*) &LEADING_ZERO, 1);
-
 #ifdef DEBUG
         Serial.print("EEPROM TOTAL: "); Serial.print(TOTAL_TRIP);
         Serial.print(", A: "); Serial.print(DAILY_TRIP_A);
@@ -237,9 +235,9 @@ void setup()
         if (NOMINAL_RPM<500) NOMINAL_RPM=2000;
         if (MOTOR_HOURS_LIMIT<100) MOTOR_HOURS_LIMIT=DEFAULT_MOTOR_HOURS_LIMIT;
         LEADING_ZERO=LEADING_ZERO & 1;
+
         CalcTire();
         wdt_reset();
-
         myDisplay.home();
         setBrightness(0);
         myDisplay.print("   HondaPrelude ");
@@ -384,6 +382,7 @@ void loop()
                                         LONGPRESS=false;
                         }
                 }
+
                 myDisplay.home();
                 if ((MOTOR_HOURS>=MOTOR_HOURS_LIMIT) && !LIMIT_BLINK) // Motor hours limit
                 {
@@ -412,6 +411,7 @@ void loop()
                         }
                         LIMIT_BLINK=false;
                 }
+
                 switch (CURRENT_SHOW) {
                 case TRIP_A:
                         buffer[8]='A';
