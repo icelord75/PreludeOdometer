@@ -5,7 +5,7 @@
    //       /      \ | \ |   /  |  /     \
    //      /   |___/___/____/ \___/_     /
    //      \___/--------TECH--------\___/
-   //       ==== ABOVE SCIENCE 1994 ====
+   //        ==== ABOVE SINCE 1994 ====
    //
    //   Ab0VE TECH - HONDA Prelude Odometer
  */
