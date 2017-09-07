@@ -259,7 +259,8 @@ void loop()
         wdt_reset();
 
 // RPM calculation
-        RPMs = ( RPM_COUNT / (float) (millis() - timeold)) * 1000.0 * 60 / 4; // 4 pulses per one revolution
+        if (RPM_COUNT!=0)
+                RPMs = ( RPM_COUNT / (float) (millis() - timeold)) * 1000.0 * 60 / 4; // 4 pulses per one revolution
         timeold = millis();
         RPM_COUNT = 0;
         MOTOR_TIME+=RPMs/NOMINAL_RPM*(millis()- timeold)/1000; // in SEC
@@ -422,7 +423,7 @@ void loop()
                         dtostrf(DAILY_TRIP_B,7, 1, buffer+9);
                         break;
                 case MOTOR_HOUR:
-                        buffer[8]='M';buffer[9]='H';
+                        buffer[8]='M'; buffer[9]='H';
                         dtostrf(MOTOR_HOURS,7, 2, buffer+10);
                         break;
                 }
