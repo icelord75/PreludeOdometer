@@ -26,26 +26,35 @@
    //  Needle <- • 9   N  A0 •
    //  DIMING -> • 10  O Arf •
    //   Setup -> • 11    3V3 •
-   //  Button -> • 12 ||| 13 •
+   //  Button -> • 12 ||| 13 • <- OneWire DS1820
    //            +-----------+
  */
+
+// TODO
+//   outside temp
+//   racelogic bum edition )))
 
 #define DEBUG
 
 #include <avr/pgmspace.h>
 #include <Arduino.h>
-#include <Wire.h>
+#include <font5x7.h> // Local font lib
 #include <LedDisplay.h>
 #include <I2C_eeprom.h>
 #include <avr/wdt.h>
+#include <OneWire.h>
 
-I2C_eeprom eeprom(0x50,16384/8); /* FM24C16A FRAM */
+OneWire ds(13);                   // DS1820 Temperature sensor
+I2C_eeprom eeprom(0x50,16384/8);  // FM24C16A FRAM
 
 #define PPR 4 // VSS pulses per axle revolution
 
-#define TRIP_A 0
-#define TRIP_B 1
-#define MOTOR_HOUR 2
+#define TRIP_A        0
+#define TRIP_B        1
+#define MOTOR_HOUR    2
+#define OUTSIDE_TEMP  3
+
+#define MAX_SHOW      3
 
 // default tire size 205/55R15
 #define TIRE_WIDTH_DEFAULT 4
@@ -122,6 +131,7 @@ LedDisplay myDisplay = LedDisplay(LED_dataPin, LED_registerSelect, LED_clockPin,
 
 float LEN=0;
 float TIRE_CIRCUMFERENCE;
+float TEMPERATURE=0;
 unsigned long TIME,TIMES;
 char buffer[20];
 bool PRESSED=false;
@@ -132,6 +142,9 @@ bool SETUP_PRESSED=false;
 bool SETUP_DO=false;
 uint8_t val;
 uint8_t SETUP_POS=0;
+uint8_t data[12];
+uint8_t addr[8];
+uint8_t type_s;
 
 #define DISPLAY_TRIP 0
 #define DISPLAY_SETUP 1
@@ -187,6 +200,18 @@ void setup()
 
         attachInterrupt(digitalPinToInterrupt(VSS_PIN), VSS, RISING);
         attachInterrupt(digitalPinToInterrupt(RPM_PIN), RPM, RISING);
+
+        // Start DS
+        if ( !ds.search(addr)) {
+                ds.reset_search();
+        } // the first ROM byte indicates which chip
+        if (addr[0] == 0x10)
+                type_s=1;
+        else
+                type_s=0;
+        ds.reset();
+        ds.select(addr);
+        ds.write(0x44, 1);        // start conversion, with parasite power on at the end
 
         // read config from EEPROM
         eeprom.readBlock(0, (uint8_t*) &TOTAL_TRIP, 4);
@@ -249,14 +274,46 @@ void setup()
         }
         DEFAULT_BRIGHTNESS=DISPLAY_UNDIMMED;
         DEFAULT_NEEDLE=NEEDLE_UNDIMMED;
+
         wdt_reset();
         delay(LOGO_DELAY);
         wdt_reset();
 }
 
+void ReadTemp()
+{
+        ds.reset();
+        ds.select(addr);
+        ds.write(0xBE); // Read Scratchpad
+
+        for ( uint8_t i = 0; i < 9; i++) {   // we need 9 bytes
+                data[i] = ds.read();
+        }
+        int16_t raw = (data[1] << 8) | data[0];
+        if (type_s) {
+                raw = raw << 3; // 9 bit resolution default
+                if (data[7] == 0x10) {
+                        // "count remain" gives full 12 bit resolution
+                        raw = (raw & 0xFFF0) + 12 - data[6];
+                }
+        } else {
+                byte cfg = (data[4] & 0x60);
+                // at lower res, the low bits are undefined, so let's zero them
+                if (cfg == 0x00) raw = raw & ~7; // 9 bit resolution, 93.75 ms
+                else if (cfg == 0x20) raw = raw & ~3; // 10 bit res, 187.5 ms
+                else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
+                //// default is 12 bit resolution, 750 ms conversion time
+        }
+        TEMPERATURE = (float)raw / 16.0;
+}
+
+
 void loop()
 {
         wdt_reset();
+
+// Temperature
+        ReadTemp();
 
 // RPM calculation
         if (RPM_COUNT!=0)
@@ -377,7 +434,7 @@ void loop()
                                 PRESSED=false;
                                 if (!LONGPRESS) { // SHORTPRESS
                                         CURRENT_SHOW++;
-                                        if (CURRENT_SHOW>2) CURRENT_SHOW=0; // A/B/H
+                                        if (CURRENT_SHOW>MAX_SHOW) CURRENT_SHOW=0; // A/B/H/T
                                         eeprom.writeBlock(15,(uint8_t*) &CURRENT_SHOW,2);
                                 } else
                                         LONGPRESS=false;
@@ -425,6 +482,12 @@ void loop()
                 case MOTOR_HOUR:
                         buffer[8]='M'; buffer[9]='H';
                         dtostrf(MOTOR_HOURS,7, 2, buffer+10);
+                        break;
+                case OUTSIDE_TEMP:
+                        buffer[8]='T';
+                        dtostrf(TEMPERATURE,5, 1, buffer+9);
+                        buffer[14]=127; // &deg;
+                        buffer[15]='C';
                         break;
                 }
                 //buffer[16]='\0';
@@ -525,7 +588,6 @@ void loop()
                 myDisplay.home();
                 myDisplay.print(buffer);
                 break;
-
         }
         delay(VISUAL_DELAY);
 }

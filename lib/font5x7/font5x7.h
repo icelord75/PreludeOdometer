@@ -1,23 +1,6 @@
-/*! \file font5x7.h \brief Graphic LCD Font (Ascii Characters). */
-//*****************************************************************************
-//
-// File Name	: 'font5x7.h'
-// Title		: Graphic LCD Font (Ascii Charaters)
-// Author		: Pascal Stang
-// Date			: 10/19/2001
-// Revised		: 10/19/2001
-// Version		: 0.1
-// Target MCU	: Atmel AVR
-// Editor Tabs	: 4
-//
-//*****************************************************************************
-
-#ifndef FONT5X7_H
-#define FONT5X7_H 
-
 // standard ascii 5x7 font
 // defines ascii characters 0x20-0x7F (32-127)
-static const unsigned char PROGMEM Font5x7[] = {
+const PROGMEM unsigned char Font5x7[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00,// (space)
 	0x00, 0x00, 0x5F, 0x00, 0x00,// !
 	0x00, 0x07, 0x00, 0x07, 0x00,// "
@@ -113,7 +96,5 @@ static const unsigned char PROGMEM Font5x7[] = {
 	0x00, 0x00, 0x7F, 0x00, 0x00,// |
 	0x00, 0x41, 0x36, 0x08, 0x00,// }
 	0x08, 0x08, 0x2A, 0x1C, 0x08,// ->
-	0x08, 0x1C, 0x2A, 0x08, 0x08 // <-
+	B00011100,  B00010100,  B00011100,  B00000000,  B00000000,  B00000000,  B00000000,  B00000000 // 127
 };
-
-#endif
