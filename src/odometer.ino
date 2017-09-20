@@ -17,7 +17,7 @@
    //            • RST R RST •
    //     GND -> • GND D  +5 •  <- +5V Reg. LM2596HV
    //     VSS -> • 2   U  A7 •
-   //   Tacho -> • 3   I  A6 •
+   //     RPM -> • 3   I  A6 •
    // LED DAT <- • 4   N  A5 • -> FRAM SCL
    // LED Reg <- • 5   O  A4 • -> FRAM SDA
    // LED Clk <- • 6      A3 •
@@ -41,7 +41,7 @@
 #include <avr/pgmspace.h>
 #include <Arduino.h>
 #include <font5x7.h> // Local font lib
-#include <LedDisplay.h> //  platformio lib install "LedDisplay"
+#include <LedDisplay.h>
 #include <I2C_eeprom.h> // platformio lib install "I2C_EEPROM"
 #include <avr/wdt.h>
 #include <OneWire.h> // platformio lib install "OneWire"
@@ -56,7 +56,7 @@ I2C_eeprom eeprom(0x50,16384/8);  // FM24C16A FRAM
 #define MOTOR_HOUR          2
 #define OUTSIDE_TEMP        3
 
-#define MAX_SHOW      3
+#define MAX_SHOW            3
 
 // default tire size 205/55R15
 #define TIRE_WIDTH_DEFAULT 4
@@ -73,6 +73,7 @@ uint8_t TIRE_RIM_ARRAY[] =    { 13, 14, 15, 16, 17, 18, 19, 20, 21, 22 };
 uint8_t TIRE_RIM;
 uint8_t TIRE_WIDTH;
 uint8_t TIRE_SIDE;
+
 #define NEEDLE_STEP 16
 #define NEEDLE_DIMMED_DEFAULT     128
 #define NEEDLE_UNDIMMED_DEFAULT   255
@@ -187,7 +188,7 @@ void RPM() // VSS signal interrupt
 void setBrightness(uint8_t bright)
 {
         // set the brightness: for each 4 chars
-        for (int a=1; a<LED_displayLength/4; a++ )
+        for ( int a=1; a<LED_displayLength/4; a++ )
                 myDisplay.loadControlRegister(B01110000 + (bright & B00001111));
 }
 
@@ -286,10 +287,10 @@ void setup()
         myDisplay.home();
         setBrightness(0);
         myDisplay.print("   HondaPrelude ");
-        for (int a=0; a<DISPLAY_UNDIMMED; a++)
-        {
+        for ( int a=0; a<=DISPLAY_UNDIMMED; a++){
                 setBrightness(a);
-                analogWrite(NEEDLE, a*17);
+                analogWrite(NEEDLE,  a * 17);
+                analogWrite(INDIGLO, a * 17);
                 delay(60);
         }
         DEFAULT_BRIGHTNESS=DISPLAY_UNDIMMED;
