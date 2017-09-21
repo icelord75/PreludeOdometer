@@ -36,7 +36,8 @@
 //   longterm l/100km
 //   instant l/100km
 
-//#define DEBUG
+#define DEBUG
+#define OPTIBOOT    // OPTIBOOT installed on board
 
 #include <avr/pgmspace.h>
 #include <Arduino.h>
@@ -44,6 +45,9 @@
 #include <LedDisplay.h>
 #include <I2C_eeprom.h> // platformio lib install "I2C_EEPROM"
 #include <OneWire.h> // platformio lib install "OneWire"
+#ifdef OPTIBOOT
+#include <avr/wdt.h>
+#endif
 
 OneWire ds(13);                   // DS1820 Temperature sensor
 I2C_eeprom eeprom(0x50,16384/8);  // FM24C16A FRAM
@@ -78,6 +82,7 @@ uint8_t TIRE_SIDE;
 uint8_t NEEDLE_DIMMED;
 uint8_t NEEDLE_UNDIMMED;
 
+#define MIN_DISPLAY 5 // Minimal visiable display
 #define MAX_DISPLAY 15
 #define DISPLAY_DIMMED_DEFAULT    10
 #define DISPLAY_UNDIMMED_DEFAULT  15
@@ -192,6 +197,9 @@ void setBrightness(uint8_t bright)
 
 void setup()
 {
+#ifdef OPTIBOOT
+      wdt_disable();
+#endif
 #ifdef DEBUG
         Serial.begin(115200);
 #endif
@@ -293,6 +301,9 @@ void setup()
         DEFAULT_NEEDLE=NEEDLE_UNDIMMED;
         DEFAULT_INDIGLO=INDIGLO_UNDIMMED;
         delay(LOGO_DELAY);
+#ifdef OPTIBOOT
+        wdt_enable(WDTO_500MS);
+#endif
 }
 
 void ReadTemp()
@@ -325,6 +336,10 @@ void ReadTemp()
 
 void loop()
 {
+#ifdef OPTIBOOT
+        wdt_reset();
+#endif
+
 // Temperature
         ReadTemp();
 
@@ -587,12 +602,12 @@ void loop()
                                                 break;
                                         case 5:
                                                 DISPLAY_UNDIMMED++;
-                                                if (DISPLAY_UNDIMMED>MAX_DISPLAY) DISPLAY_UNDIMMED=5;
+                                                if (DISPLAY_UNDIMMED>MAX_DISPLAY) DISPLAY_UNDIMMED=MIN_DISPLAY;
                                                 setBrightness(DISPLAY_UNDIMMED);
                                                 break;
                                         case 6:
                                                 DISPLAY_DIMMED++;
-                                                if (DISPLAY_DIMMED>MAX_DISPLAY) DISPLAY_DIMMED=5;
+                                                if (DISPLAY_DIMMED>MAX_DISPLAY) DISPLAY_DIMMED=MIN_DISPLAY;
                                                 setBrightness(DISPLAY_DIMMED);
                                                 break;
                                         case 7:
