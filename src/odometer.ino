@@ -37,7 +37,7 @@
 //   instant l/100km
 
 #define DEBUG
-#define OPTIBOOT    // OPTIBOOT installed on board
+//#define OPTIBOOT    // OPTIBOOT installed on board
 
 #include <avr/pgmspace.h>
 #include <Arduino.h>
@@ -136,11 +136,11 @@ uint8_t DIMMING;
 #define LED_enable 7
 #define LED_reset 8
 
-#define LED_displayLength 16 // Two HCMS-297x led matrix displays
+#define LED_displayLength 16  // Two HCMS-297x led matrix displays
 LedDisplay myDisplay = LedDisplay(LED_dataPin, LED_registerSelect, LED_clockPin, LED_enable,
                                   LED_reset, LED_displayLength);
 
-#define VISUAL_DELAY      10 // for visual pleasure and correct timed features
+#define VISUAL_DELAY      10  // for visual pleasure and correct timed features
 #define LOGO_DELAY        500 // firt logo output delay
 #define LONGPRESS_TIME    1000
 
@@ -198,7 +198,7 @@ void setBrightness(uint8_t bright)
 void setup()
 {
 #ifdef OPTIBOOT
-      wdt_disable();
+        wdt_disable();
 #endif
 #ifdef DEBUG
         Serial.begin(115200);
@@ -217,20 +217,19 @@ void setup()
         pinMode(VSS_PIN, INPUT_PULLUP);
         pinMode(RPM_PIN, INPUT_PULLUP);
 
-        attachInterrupt(digitalPinToInterrupt(VSS_PIN), VSS, RISING);
-        attachInterrupt(digitalPinToInterrupt(RPM_PIN), RPM, RISING);
+        attachInterrupt(digitalPinToInterrupt(VSS_PIN), VSS, RISING);  // positive tiggering
+        attachInterrupt(digitalPinToInterrupt(RPM_PIN), RPM, FALLING); // negative tiggering
 
         // Start DS
-        if ( !ds.search(addr)) {
+        if ( !ds.search(addr))
                 ds.reset_search();
-        } // the first ROM byte indicates which chip
         if (addr[0] == 0x10)
                 type_s=1;
         else
                 type_s=0;
         ds.reset();
         ds.select(addr);
-        ds.write(0x44, 1);        // start conversion, with parasite power on at the end
+        ds.write(0x44, 1);
 
         // read config from EEPROM
         eeprom.readBlock(0, (uint8_t*) &TOTAL_TRIP, 4);
@@ -250,6 +249,7 @@ void setup()
         eeprom.readBlock(34,(uint8_t*) &LEADING_ZERO, 1);
         eeprom.readBlock(35,(uint8_t*) &INDIGLO_DIMMED, 1);
         eeprom.readBlock(36,(uint8_t*) &INDIGLO_UNDIMMED, 1);
+
 #ifdef DEBUG
         Serial.print("EEPROM TOTAL: "); Serial.print(TOTAL_TRIP);
         Serial.print(", A: "); Serial.print(DAILY_TRIP_A);
@@ -259,18 +259,18 @@ void setup()
         Serial.print("/"); Serial.print(TIRE_SIDE);
         Serial.print("R"); Serial.print(TIRE_RIM);
         Serial.print('\n');
-        Serial.print("Night:"); Serial.print(NEEDLE_DIMMED);
-        Serial.print("EEPROM NEEDLE: Day:"); Serial.print(NEEDLE_UNDIMMED);
+        Serial.print("EEPROM NEEDLE Day:"); Serial.print(NEEDLE_UNDIMMED);
+        Serial.print(" Night:"); Serial.print(NEEDLE_DIMMED);
         Serial.print('\n');
         Serial.print("EEPROM DISPLAY: Day:"); Serial.print(DISPLAY_UNDIMMED);
-        Serial.print("Night:"); Serial.print(DISPLAY_DIMMED);
+        Serial.print(" Night:"); Serial.print(DISPLAY_DIMMED);
         Serial.print('\n');
         Serial.print("EEPROM INDIGLO: Day:"); Serial.print(INDIGLO_UNDIMMED);
-        Serial.print("Night:"); Serial.print(INDIGLO_DIMMED);
+        Serial.print(" Night:"); Serial.print(INDIGLO_DIMMED);
         Serial.print('\n');
         Serial.print("EEPROM MOTOR: Hours"); Serial.print(MOTOR_HOURS);
-        Serial.print("RPM:"); Serial.print(NOMINAL_RPM);
-        Serial.print("Limit:"); Serial.print(MOTOR_HOURS_LIMIT);
+        Serial.print(" RPM:"); Serial.print(NOMINAL_RPM);
+        Serial.print(" Limit:"); Serial.print(MOTOR_HOURS_LIMIT);
         Serial.print('\n');
 #endif
 
@@ -291,7 +291,7 @@ void setup()
         myDisplay.home();
         setBrightness(0);
         myDisplay.print("   HondaPrelude ");
-        for ( int a=0; a<=DISPLAY_UNDIMMED; a++){
+        for ( int a=0; a<=DISPLAY_UNDIMMED; a++) {
                 setBrightness(a);
                 analogWrite(NEEDLE,  a * 17);
                 analogWrite(INDIGLO, a * 17);
@@ -353,14 +353,15 @@ void loop()
         MOTOR_HOURS+=MOTOR_TIME/3600; // in HOURS
 
 // TRIP calculation
-        LEN=PULSES*LENPERPULSE;
-        PULSES=0;
-        TOTAL_TRIP+=LEN;
-        DAILY_TRIP_A+=LEN;
-        DAILY_TRIP_B+=LEN;
-        if (DAILY_TRIP_A>=10000) DAILY_TRIP_A-=10000;
-        if (DAILY_TRIP_B>=10000) DAILY_TRIP_B-=10000;
-
+        if (PULSES!=0) {
+                LEN=PULSES*LENPERPULSE;
+                PULSES=0;
+                TOTAL_TRIP+=LEN;
+                DAILY_TRIP_A+=LEN;
+                DAILY_TRIP_B+=LEN;
+                if (DAILY_TRIP_A>=10000) DAILY_TRIP_A-=10000;
+                if (DAILY_TRIP_B>=10000) DAILY_TRIP_B-=10000;
+        }
 /// Store in FRAM in each cycle
         eeprom.writeBlock(0, (uint8_t*) &TOTAL_TRIP, 4);
         eeprom.writeBlock(4, (uint8_t*) &DAILY_TRIP_A, 4);
@@ -636,7 +637,13 @@ void loop()
                 }
                 myDisplay.home();
                 myDisplay.print(buffer);
+#ifdef DEBUG
+                Serial.print("DISPLAY:  ");
+                Serial.println(buffer);
+#endif
                 break;
         }
+#ifndef DEBUG       // While debug - slow enough
         delay(VISUAL_DELAY);
+#endif
 }
