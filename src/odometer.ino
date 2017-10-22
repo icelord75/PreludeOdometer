@@ -36,7 +36,7 @@
 //   longterm l/100km
 //   instant l/100km
 
-#define DEBUG
+//-#define DEBUG
 //#define OPTIBOOT    // OPTIBOOT installed on board
 
 #include <avr/pgmspace.h>
@@ -44,12 +44,15 @@
 #include <font5x7.h> // Local font lib
 #include <LedDisplay.h>
 #include <I2C_eeprom.h> // platformio lib install "I2C_EEPROM"
-#include <OneWire.h> // platformio lib install "OneWire"
 #ifdef OPTIBOOT
 #include <avr/wdt.h>
 #endif
 
+#ifdef TEMP
+#include <OneWire.h> // platformio lib install "OneWire"
 OneWire ds(13);                   // DS1820 Temperature sensor
+#endif
+
 I2C_eeprom eeprom(0x50,16384/8);  // FM24C16A FRAM
 
 #define PPR 4 // VSS pulses per axle revolution
@@ -221,6 +224,7 @@ void setup()
         attachInterrupt(digitalPinToInterrupt(RPM_PIN), RPM, FALLING); // negative tiggering
 
         // Start DS
+#ifdef TEMP
         if ( !ds.search(addr))
                 ds.reset_search();
         if (addr[0] == 0x10)
@@ -230,6 +234,7 @@ void setup()
         ds.reset();
         ds.select(addr);
         ds.write(0x44, 1);
+#endif
 
         // read config from EEPROM
         eeprom.readBlock(0, (uint8_t*) &TOTAL_TRIP, 4);
@@ -306,6 +311,7 @@ void setup()
 #endif
 }
 
+#ifdef TEMP
 void ReadTemp()
 {
         ds.reset();
@@ -332,7 +338,7 @@ void ReadTemp()
         }
         TEMPERATURE = (float)raw / 16.0;
 }
-
+#endif
 
 void loop()
 {
@@ -340,8 +346,10 @@ void loop()
         wdt_reset();
 #endif
 
+#ifdef TEMP
 // Temperature
         ReadTemp();
+#endif
 
 // RPM calculation
         if (RPM_COUNT!=0)
