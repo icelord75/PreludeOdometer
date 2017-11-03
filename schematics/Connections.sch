@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="7.6.0">
+<eagle version="8.3.2">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
+<setting keepoldvectorfont="yes"/>
 <setting verticaltext="up"/>
 </settings>
 <grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
@@ -4634,11 +4635,6 @@ General purpose 1N400x type rectifier
 <label x="116.84" y="-12.7" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="Q2" gate="G$1" pin="D"/>
-<wire x1="27.94" y1="-45.72" x2="27.94" y2="-50.8" width="0.1524" layer="91"/>
-<label x="27.94" y="-48.26" size="1.778" layer="95" rot="R90"/>
-</segment>
-<segment>
 <pinref part="SUB1.2" gate="1" pin="5"/>
 <wire x1="81.28" y1="-12.7" x2="66.04" y2="-12.7" width="0.1524" layer="91"/>
 <label x="71.12" y="-12.7" size="1.778" layer="95" rot="MR0"/>
@@ -4687,6 +4683,11 @@ General purpose 1N400x type rectifier
 <segment>
 <wire x1="-2.54" y1="-73.66" x2="-2.54" y2="-58.42" width="0.1524" layer="91"/>
 <label x="-2.54" y="-63.5" size="1.778" layer="95" rot="R90"/>
+</segment>
+<segment>
+<pinref part="Q2" gate="G$1" pin="D"/>
+<wire x1="27.94" y1="-45.72" x2="27.94" y2="-50.8" width="0.1524" layer="91"/>
+<label x="27.94" y="-48.26" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 <net name="DIMMING" class="0">

@@ -31,12 +31,11 @@
  */
 
 // TODO
-//   outside temp
 //   racelogic bum edition )))
 //   longterm l/100km
 //   instant l/100km
 
-//-#define DEBUG
+#define DEBUG
 //#define OPTIBOOT    // OPTIBOOT installed on board
 
 #include <avr/pgmspace.h>
@@ -48,10 +47,8 @@
 #include <avr/wdt.h>
 #endif
 
-#ifdef TEMP
 #include <OneWire.h> // platformio lib install "OneWire"
 OneWire ds(13);                   // DS1820 Temperature sensor
-#endif
 
 I2C_eeprom eeprom(0x50,16384/8);  // FM24C16A FRAM
 
@@ -80,12 +77,12 @@ uint8_t TIRE_RIM;
 uint8_t TIRE_WIDTH;
 uint8_t TIRE_SIDE;
 #define NEEDLE_STEP 16
-#define NEEDLE_DIMMED_DEFAULT     128
+#define NEEDLE_DIMMED_DEFAULT     127
 #define NEEDLE_UNDIMMED_DEFAULT   255
 uint8_t NEEDLE_DIMMED;
 uint8_t NEEDLE_UNDIMMED;
 
-#define MIN_DISPLAY 5 // Minimal visiable display
+#define MIN_DISPLAY 1 // Minimal visiable display
 #define MAX_DISPLAY 15
 #define DISPLAY_DIMMED_DEFAULT    10
 #define DISPLAY_UNDIMMED_DEFAULT  15
@@ -93,7 +90,7 @@ uint8_t DISPLAY_DIMMED;
 uint8_t DISPLAY_UNDIMMED;
 
 #define INDIGLO_STEP 16
-#define INDIGLO_DIMMED_DEFAULT    128
+#define INDIGLO_DIMMED_DEFAULT    127
 #define INDIGLO_UNDIMMED_DEFAULT  255
 uint8_t INDIGLO_DIMMED;
 uint8_t INDIGLO_UNDIMMED;
@@ -143,7 +140,6 @@ uint8_t DIMMING;
 LedDisplay myDisplay = LedDisplay(LED_dataPin, LED_registerSelect, LED_clockPin, LED_enable,
                                   LED_reset, LED_displayLength);
 
-#define VISUAL_DELAY      10  // for visual pleasure and correct timed features
 #define LOGO_DELAY        500 // firt logo output delay
 #define LONGPRESS_TIME    1000
 
@@ -174,11 +170,13 @@ uint8_t DEFAULT_INDIGLO;
 void CalcTire()
 {
         TIRE_CIRCUMFERENCE = (TIRE_WIDTH_ARRAY[TIRE_WIDTH]*TIRE_SIDE_ARRAY[TIRE_SIDE]/100+TIRE_RIM_ARRAY[TIRE_RIM]*25.4)*3.1416/1000;
+        LENPERPULSE=TIRE_CIRCUMFERENCE/PPR; // in Meters
 #ifdef DEBUG
         Serial.print("TIRE CIRCUMFERENCE: "); Serial.print(TIRE_CIRCUMFERENCE);
         Serial.println("m");
+        Serial.print("LEN PER PULSE: "); Serial.print(LENPERPULSE);
+        Serial.println("m");
 #endif
-        LENPERPULSE=TIRE_CIRCUMFERENCE/PPR/1000; // in Meters
 }
 
 void VSS() // VSS signal interrupt
@@ -217,14 +215,13 @@ void setup()
         pinMode(INDIGLO, OUTPUT);
         pinMode(BUTTON, INPUT_PULLUP);
         pinMode(SETUP_PIN, INPUT_PULLUP);
-        pinMode(VSS_PIN, INPUT_PULLUP);
+        pinMode(VSS_PIN, INPUT);
         pinMode(RPM_PIN, INPUT_PULLUP);
 
         attachInterrupt(digitalPinToInterrupt(VSS_PIN), VSS, RISING);  // positive tiggering
         attachInterrupt(digitalPinToInterrupt(RPM_PIN), RPM, FALLING); // negative tiggering
 
         // Start DS
-#ifdef TEMP
         if ( !ds.search(addr))
                 ds.reset_search();
         if (addr[0] == 0x10)
@@ -234,14 +231,13 @@ void setup()
         ds.reset();
         ds.select(addr);
         ds.write(0x44, 1);
-#endif
 
         // read config from EEPROM
         eeprom.readBlock(0, (uint8_t*) &TOTAL_TRIP, 4);
         eeprom.readBlock(4, (uint8_t*) &DAILY_TRIP_A, 4);
         eeprom.readBlock(9, (uint8_t*) &DAILY_TRIP_B, 4);
-        eeprom.readBlock(15,(uint8_t*) &CURRENT_SHOW, 1);
-        eeprom.readBlock(16,(uint8_t*) &TIRE_WIDTH, 1);
+        eeprom.readBlock(200,(uint8_t*) &CURRENT_SHOW, 1);
+        eeprom.readBlock(37,(uint8_t*) &TIRE_WIDTH, 1);
         eeprom.readBlock(18,(uint8_t*) &TIRE_SIDE, 1);
         eeprom.readBlock(19,(uint8_t*) &TIRE_RIM, 1);
         eeprom.readBlock(20,(uint8_t*) &NEEDLE_DIMMED, 1);
@@ -279,6 +275,7 @@ void setup()
         Serial.print('\n');
 #endif
 
+// fix posible eeprom errata
         if (TIRE_WIDTH>=sizeof(TIRE_WIDTH_ARRAY)/2) TIRE_WIDTH=TIRE_WIDTH_DEFAULT;
         if (TIRE_SIDE>=sizeof(TIRE_SIDE_ARRAY)) TIRE_SIDE=TIRE_SIDE_DEFAULT;
         if (TIRE_RIM>=sizeof(TIRE_RIM_ARRAY)) TIRE_RIM=TIRE_RIM_DEFAULT;
@@ -291,16 +288,17 @@ void setup()
         if (NOMINAL_RPM<500) NOMINAL_RPM=2000;
         if (MOTOR_HOURS_LIMIT<100) MOTOR_HOURS_LIMIT=DEFAULT_MOTOR_HOURS_LIMIT;
         LEADING_ZERO=LEADING_ZERO & 1;
+        if (CURRENT_SHOW>MAX_SHOW) CURRENT_SHOW=0;
 
         CalcTire();
         myDisplay.home();
         setBrightness(0);
         myDisplay.print("   HondaPrelude ");
-        for ( int a=0; a<=DISPLAY_UNDIMMED; a++) {
+        for ( int a=1; a<=DISPLAY_UNDIMMED; a++) {
                 setBrightness(a);
                 analogWrite(NEEDLE,  a * 17);
                 analogWrite(INDIGLO, a * 17);
-                delay(100);
+                delay(50);
         }
         DEFAULT_BRIGHTNESS=DISPLAY_UNDIMMED;
         DEFAULT_NEEDLE=NEEDLE_UNDIMMED;
@@ -311,7 +309,6 @@ void setup()
 #endif
 }
 
-#ifdef TEMP
 void ReadTemp()
 {
         ds.reset();
@@ -338,7 +335,6 @@ void ReadTemp()
         }
         TEMPERATURE = (float)raw / 16.0;
 }
-#endif
 
 void loop()
 {
@@ -346,30 +342,36 @@ void loop()
         wdt_reset();
 #endif
 
-#ifdef TEMP
 // Temperature
         ReadTemp();
-#endif
 
 // RPM calculation
         if (RPM_COUNT!=0)
+        {
                 RPMs = ( RPM_COUNT / (float) (millis() - timeold)) * 1000.0 * 60 / 4; // 4 pulses per one revolution
-        timeold = millis();
-        RPM_COUNT = 0;
-        MOTOR_TIME+=RPMs/NOMINAL_RPM*(millis()- timeold)/1000; // in SEC
-        timeold = millis();
-        MOTOR_HOURS+=MOTOR_TIME/3600; // in HOURS
+                MOTOR_TIME = RPMs/NOMINAL_RPM*(millis()- timeold)/1000; // in SEC
+                RPM_COUNT = 0;
+                timeold = millis();
+                MOTOR_HOURS += MOTOR_TIME/3600; // in HOURS
+        }
 
 // TRIP calculation
         if (PULSES!=0) {
+#ifdef DEBUG
+                Serial.print("PULSES: "); Serial.print(PULSES);
+                Serial.println("");
+                Serial.print("TIRE CIRCUMFERENCE: "); Serial.print(TIRE_CIRCUMFERENCE);
+                Serial.println("m");
+#endif
                 LEN=PULSES*LENPERPULSE;
                 PULSES=0;
-                TOTAL_TRIP+=LEN;
-                DAILY_TRIP_A+=LEN;
-                DAILY_TRIP_B+=LEN;
+                TOTAL_TRIP+=LEN/1000; // in Km
+                DAILY_TRIP_A+=LEN/1000; // in Km
+                DAILY_TRIP_B+=LEN/1000; // in Km
                 if (DAILY_TRIP_A>=10000) DAILY_TRIP_A-=10000;
                 if (DAILY_TRIP_B>=10000) DAILY_TRIP_B-=10000;
         }
+
 /// Store in FRAM in each cycle
         eeprom.writeBlock(0, (uint8_t*) &TOTAL_TRIP, 4);
         eeprom.writeBlock(4, (uint8_t*) &DAILY_TRIP_A, 4);
@@ -424,7 +426,7 @@ void loop()
                                         break;
                                 default:
                                         //BACK FROM SETUP
-                                        eeprom.writeBlock(16,(uint8_t*) &TIRE_WIDTH, 1);
+                                        eeprom.writeBlock(37,(uint8_t*) &TIRE_WIDTH, 1);
                                         eeprom.writeBlock(18,(uint8_t*) &TIRE_SIDE, 1);
                                         eeprom.writeBlock(19,(uint8_t*) &TIRE_RIM, 1);
                                         eeprom.writeBlock(20,(uint8_t*) &NEEDLE_DIMMED, 1);
@@ -478,7 +480,7 @@ void loop()
                                 if (!LONGPRESS) { // SHORTPRESS
                                         CURRENT_SHOW++;
                                         if (CURRENT_SHOW>MAX_SHOW) CURRENT_SHOW=0; // A/B/H/T
-                                        eeprom.writeBlock(15,(uint8_t*) &CURRENT_SHOW,2);
+                                        eeprom.writeBlock(200,(uint8_t*) &CURRENT_SHOW,2);
                                 } else
                                         LONGPRESS=false;
                         }
@@ -496,7 +498,7 @@ void loop()
                 {
                         if (LEADING_ZERO)
                         {
-                                sprintf(buffer,"%08d",(int)TOTAL_TRIP);
+                                sprintf(buffer,"%08f",TOTAL_TRIP);
                         } else {
                                 dtostrf(TOTAL_TRIP,8, 0, buffer);
                         }
@@ -526,8 +528,8 @@ void loop()
                         dtostrf(DAILY_TRIP_B,7, 1, buffer+9);
                         break;
                 case MOTOR_HOUR:
-                        buffer[8]='M'; buffer[9]='H';
-                        dtostrf(MOTOR_HOURS,7, 2, buffer+10);
+                        buffer[8]='M';
+                        dtostrf(MOTOR_HOURS,7, 1, buffer+9);
                         break;
                 case OUTSIDE_TEMP:
                         buffer[8]='T';
@@ -536,8 +538,12 @@ void loop()
                         buffer[15]='C';
                         break;
                 }
-                //buffer[16]='\0';
+                buffer[16]='\0';
                 myDisplay.print(buffer);
+#ifdef DEBUG
+                Serial.print("DISPLAY:  ");
+                Serial.println(buffer);
+#endif
                 break;
 // SETUP MODE
         case DISPLAY_SETUP:
@@ -557,9 +563,9 @@ void loop()
                         break;
                 case 6: sprintf(buffer," DisplayNight% 3d ",DISPLAY_DIMMED);
                         break;
-                case 7: sprintf(buffer," INDIGLODay% 5d ",INDIGLO_UNDIMMED);
+                case 7: sprintf(buffer," IndigloDay% 5d ",INDIGLO_UNDIMMED);
                         break;
-                case 8: sprintf(buffer," INDIGLONight% 3d ",INDIGLO_DIMMED);
+                case 8: sprintf(buffer," IndigloNght% 3d ",INDIGLO_DIMMED);
                         break;
                 case 9: sprintf(buffer," NominalRPM% 5d ",NOMINAL_RPM);
                         break;
@@ -591,15 +597,15 @@ void loop()
                                         switch (SETUP_POS) {
                                         case 0:
                                                 TIRE_WIDTH++;
-                                                if (TIRE_WIDTH>sizeof(TIRE_WIDTH_ARRAY)/2) TIRE_WIDTH=0;
+                                                if (TIRE_WIDTH>=sizeof(TIRE_WIDTH_ARRAY)/2) TIRE_WIDTH=0;
                                                 break;
                                         case 1:
                                                 TIRE_SIDE++;
-                                                if (TIRE_SIDE>sizeof(TIRE_SIDE_ARRAY)) TIRE_SIDE=0;
+                                                if (TIRE_SIDE>=sizeof(TIRE_SIDE_ARRAY)) TIRE_SIDE=0;
                                                 break;
                                         case 2:
                                                 TIRE_RIM++;
-                                                if (TIRE_RIM>sizeof(TIRE_RIM_ARRAY)) TIRE_RIM=0;
+                                                if (TIRE_RIM>=sizeof(TIRE_RIM_ARRAY)) TIRE_RIM=0;
                                                 break;
                                         case 3:
                                                 NEEDLE_UNDIMMED+=NEEDLE_STEP;
@@ -651,7 +657,4 @@ void loop()
 #endif
                 break;
         }
-#ifndef DEBUG       // While debug - slow enough
-        delay(VISUAL_DELAY);
-#endif
 }
