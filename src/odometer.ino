@@ -215,7 +215,7 @@ void setup()
         pinMode(INDIGLO, OUTPUT);
         pinMode(BUTTON, INPUT_PULLUP);
         pinMode(SETUP_PIN, INPUT_PULLUP);
-        pinMode(VSS_PIN, INPUT);
+        pinMode(VSS_PIN, INPUT_PULLUP);
         pinMode(RPM_PIN, INPUT_PULLUP);
 
         attachInterrupt(digitalPinToInterrupt(VSS_PIN), VSS, RISING);  // positive tiggering
@@ -384,6 +384,7 @@ void loop()
         Serial.print(" A:"); Serial.print(DAILY_TRIP_A);
         Serial.print(" B:"); Serial.print(DAILY_TRIP_B);
         Serial.print(" M:"); Serial.print(MOTOR_HOURS);
+        Serial.print(" TEMP:"); Serial.print(TEMPERATURE);
         Serial.println("");
 #endif
 
@@ -397,18 +398,19 @@ void loop()
                         setBrightness(DEFAULT_BRIGHTNESS);
                         analogWrite(NEEDLE, DEFAULT_NEEDLE);
                         analogWrite(INDIGLO, DEFAULT_INDIGLO);
-                } else {
-                        if (DIMMED) { // JUST UNDIMMED and fade out
-                                if (DEFAULT_BRIGHTNESS<DISPLAY_UNDIMMED) DEFAULT_BRIGHTNESS++;
-                                if (DEFAULT_NEEDLE<NEEDLE_UNDIMMED) DEFAULT_NEEDLE+=NEEDLE_STEP;
-                                if (DEFAULT_INDIGLO<INDIGLO_UNDIMMED) DEFAULT_INDIGLO+=INDIGLO_STEP;
-                                if ((DEFAULT_BRIGHTNESS>=DISPLAY_UNDIMMED) && (DEFAULT_NEEDLE>=NEEDLE_UNDIMMED) && (DEFAULT_INDIGLO>=INDIGLO_UNDIMMED)) DIMMED=false;
-                                setBrightness(DEFAULT_BRIGHTNESS);
-                                analogWrite(NEEDLE, DEFAULT_NEEDLE);
-                                analogWrite(INDIGLO, DEFAULT_INDIGLO);
-                        }
                 }
-        }
+          } else {
+                if (DIMMED) { // JUST UNDIMMED and fade out
+                        if (DEFAULT_BRIGHTNESS<DISPLAY_UNDIMMED) DEFAULT_BRIGHTNESS++;
+                        if (DEFAULT_NEEDLE<NEEDLE_UNDIMMED) DEFAULT_NEEDLE+=NEEDLE_STEP;
+                        if (DEFAULT_INDIGLO<INDIGLO_UNDIMMED) DEFAULT_INDIGLO+=INDIGLO_STEP;
+                        if ((DEFAULT_BRIGHTNESS>=DISPLAY_UNDIMMED) && (DEFAULT_NEEDLE>=NEEDLE_UNDIMMED) && (DEFAULT_INDIGLO>=INDIGLO_UNDIMMED)) DIMMED=false;
+                        setBrightness(DEFAULT_BRIGHTNESS);
+                        analogWrite(NEEDLE, DEFAULT_NEEDLE);
+                        analogWrite(INDIGLO, DEFAULT_INDIGLO);
+                  }
+          }
+
 
         val=digitalRead(SETUP_PIN);
         if (val == LOW) {
