@@ -52,7 +52,7 @@ OneWire ds(13);                   // DS1820 Temperature sensor
 
 I2C_eeprom eeprom(0x50,16384/8);  // FM24C16A FRAM
 
-#define PPR 4 // VSS pulses per axle revolution
+#define PPR 15 // VSS pulses per axle revolution
 
 #define TRIP_A              0
 #define TRIP_B              1
