@@ -7,7 +7,10 @@
             "name": "Win32",
             "includePath": [
                 "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/src",
+                "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/.pio/libdeps/nanoatmega328/OneWire_ID1",
                 "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/lib/LedDisplay",
+                "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/.pio/libdeps/nanoatmega328/I2C_EEPROM_ID1346",
+                "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/Wire/src",
                 "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/lib/font5x7",
                 "C:/Users/ice/.platformio/packages/framework-arduinoavr/cores/arduino",
                 "C:/Users/ice/.platformio/packages/framework-arduinoavr/variants/eightanaloginputs",
@@ -15,7 +18,6 @@
                 "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/HID/src",
                 "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/SPI/src",
                 "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/SoftwareSerial/src",
-                "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/Wire/src",
                 "C:/Users/ice/.platformio/packages/tool-unity",
                 ""
             ],
@@ -23,7 +25,10 @@
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
                     "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/src",
+                    "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/.pio/libdeps/nanoatmega328/OneWire_ID1",
                     "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/lib/LedDisplay",
+                    "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/.pio/libdeps/nanoatmega328/I2C_EEPROM_ID1346",
+                    "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/Wire/src",
                     "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/lib/font5x7",
                     "C:/Users/ice/.platformio/packages/framework-arduinoavr/cores/arduino",
                     "C:/Users/ice/.platformio/packages/framework-arduinoavr/variants/eightanaloginputs",
@@ -31,13 +36,12 @@
                     "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/HID/src",
                     "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/SPI/src",
                     "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/SoftwareSerial/src",
-                    "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/Wire/src",
                     "C:/Users/ice/.platformio/packages/tool-unity",
                     ""
                 ]
             },
             "defines": [
-                "PLATFORMIO=40003",
+                "PLATFORMIO=40100",
                 "ARDUINO_AVR_NANO",
                 "F_CPU=16000000L",
                 "ARDUINO_ARCH_AVR",
