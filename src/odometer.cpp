@@ -35,7 +35,7 @@
 //   longterm l/100km
 //   instant l/100km
 
-// #define DEBUG
+//#define DEBUG
 
 #include <avr/pgmspace.h>
 #include <Arduino.h>
@@ -47,7 +47,7 @@
 
 OneWire ds(13); // DS1820 Temperature sensor
 
-#define PPR 15 // VSS pulses per axle revolution
+#define PPR 4 // VSS pulses per axle revolution
 
 #define TRIP_A 0
 #define TRIP_B 1
@@ -291,7 +291,7 @@ void setup()
 #endif
 
         // fix posible eeprom errata
-        if (TOTAL_TRIP < 0)
+        if ((TOTAL_TRIP < 0) && (TOTAL_TRIP > 99999999))
                 TOTAL_TRIP = 0;
         if (DAILY_TRIP_A < 0)
                 DAILY_TRIP_A = 0;
@@ -597,13 +597,13 @@ void loop()
                 }
                 else // Show total trip
                 {
-                        if (LEADING_ZERO)
+			if (LEADING_ZERO)
                         {
-                                sprintf(buffer, "%08f", TOTAL_TRIP);
+                                dtostrf(trunc(TOTAL_TRIP), 8, 0, buffer);
                         }
                         else
                         {
-                                dtostrf(TOTAL_TRIP, 8, 0, buffer);
+                                dtostrf(trunc(TOTAL_TRIP), 8, 0, buffer);
                         }
                         if (LIMIT_BLINK)
                         {

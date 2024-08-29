@@ -1,58 +1,61 @@
+//
+// !!! WARNING !!! AUTO-GENERATED FILE!
+// PLEASE DO NOT MODIFY IT AND USE "platformio.ini":
+// https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags
+//
 {
     "configurations": [
         {
-            "name": "!!! WARNING !!! AUTO-GENERATED FILE, PLEASE DO NOT MODIFY IT AND USE https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags"
-        },
-        {
-            "name": "Win32",
+            "name": "PlatformIO",
             "includePath": [
-                "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/src",
-                "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/.pio/libdeps/nanoatmega328/OneWire_ID1",
-                "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/lib/LedDisplay",
-                "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/.pio/libdeps/nanoatmega328/I2C_EEPROM_ID1346",
-                "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/Wire/src",
-                "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/lib/font5x7",
-                "C:/Users/ice/.platformio/packages/framework-arduinoavr/cores/arduino",
-                "C:/Users/ice/.platformio/packages/framework-arduinoavr/variants/eightanaloginputs",
-                "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/EEPROM/src",
-                "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/HID/src",
-                "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/SPI/src",
-                "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/SoftwareSerial/src",
-                "C:/Users/ice/.platformio/packages/tool-unity",
+                "z:/src/PreludeOdometer/src",
+                "z:/src/PreludeOdometer/lib/LedDisplay",
+                "z:/src/PreludeOdometer/lib/font5x7",
+                "z:/src/PreludeOdometer/lib/FM24",
+                "z:/src/PreludeOdometer/.pio/libdeps/nanoatmega328/OneWire",
+                "C:/Users/ice/.platformio/packages/framework-arduino-avr/cores/arduino",
+                "C:/Users/ice/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
+                "C:/Users/ice/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                "C:/Users/ice/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                "C:/Users/ice/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                "C:/Users/ice/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                "C:/Users/ice/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
                 ""
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/src",
-                    "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/.pio/libdeps/nanoatmega328/OneWire_ID1",
-                    "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/lib/LedDisplay",
-                    "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/.pio/libdeps/nanoatmega328/I2C_EEPROM_ID1346",
-                    "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/Wire/src",
-                    "c:/Users/ice/ownCloud/Development/Prelude/PreludeOdometer/lib/font5x7",
-                    "C:/Users/ice/.platformio/packages/framework-arduinoavr/cores/arduino",
-                    "C:/Users/ice/.platformio/packages/framework-arduinoavr/variants/eightanaloginputs",
-                    "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/EEPROM/src",
-                    "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/HID/src",
-                    "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/SPI/src",
-                    "C:/Users/ice/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/SoftwareSerial/src",
-                    "C:/Users/ice/.platformio/packages/tool-unity",
+                    "z:/src/PreludeOdometer/src",
+                    "z:/src/PreludeOdometer/lib/LedDisplay",
+                    "z:/src/PreludeOdometer/lib/font5x7",
+                    "z:/src/PreludeOdometer/lib/FM24",
+                    "z:/src/PreludeOdometer/.pio/libdeps/nanoatmega328/OneWire",
+                    "C:/Users/ice/.platformio/packages/framework-arduino-avr/cores/arduino",
+                    "C:/Users/ice/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
+                    "C:/Users/ice/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                    "C:/Users/ice/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                    "C:/Users/ice/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                    "C:/Users/ice/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                    "C:/Users/ice/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
                     ""
                 ]
             },
             "defines": [
-                "PLATFORMIO=40100",
+                "PLATFORMIO=60115",
                 "ARDUINO_AVR_NANO",
                 "F_CPU=16000000L",
                 "ARDUINO_ARCH_AVR",
-                "ARDUINO=10805",
+                "ARDUINO=10808",
                 "__AVR_ATmega328P__",
                 ""
             ],
-            "intelliSenseMode": "clang-x64",
-            "cStandard": "c11",
-            "cppStandard": "c++11",
-            "compilerPath": "\"C:/Users/ice/.platformio/packages/toolchain-atmelavr/bin/avr-gcc.exe\" -mmcu=atmega328p"
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++11",
+            "compilerPath": "C:/Users/ice/.platformio/packages/toolchain-atmelavr/bin/avr-gcc.exe",
+            "compilerArgs": [
+                "-mmcu=atmega328p",
+                ""
+            ]
         }
     ],
     "version": 4
